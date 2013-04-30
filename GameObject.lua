@@ -32,8 +32,15 @@ local GameObject = Class
   -- container
   INSTANCES = { },
       
+  -- identifiers
+  NEXT_ID = 1,
+  
+  -- type
+  TYPE = { },
+      
   -- constructor
   init = function(self, x, y, w, h)
+    -- save attributes
     self.w        = (w or 0)
     self.h        = (h or 0)
     self.x        = x
@@ -47,6 +54,11 @@ local GameObject = Class
     end
     table.insert(GameObject.INSTANCES[self.type], self) 
     
+    -- assign identifier
+    self.id = GameObject.NEXT_ID
+    GameObject.NEXT_ID = GameObject.NEXT_ID + 1
+    self.name = self:typename() .. '(' .. tostring(self.id) .. ')'
+    
   end,
   
   -- default attribute values
@@ -54,11 +66,9 @@ local GameObject = Class
   dy = 0
 }
 
---[[----------------------------------------------------------------------------
-Types
---]]
-
-GameObject.TYPE = {}
+--[[------------------------------------------------------------
+TYPES
+--]]------------------------------------------------------------
 
 function GameObject.TYPE.new(typename)
   local type_index = #(GameObject.TYPE) + 1
@@ -88,10 +98,6 @@ end
 function GameObject.count(type)
   return #(GameObject.INSTANCES[type])
 end
-
---[[------------------------------------------------------------
-Game loop
---]]
 
 function GameObject.updateAll(dt, view)
   
@@ -123,7 +129,6 @@ function GameObject.updateAll(dt, view)
 end
 
 function GameObject.drawAll(view)
-
   -- for each type of object
   for t, object_type in pairs(GameObject.INSTANCES) do
     -- for each object
@@ -138,6 +143,10 @@ function GameObject.drawAll(view)
   end
 end
 
+
+--[[------------------------------------------------------------
+METHODS
+--]]------------------------------------------------------------
 
 --[[----------------------------------------------------------------------------
 Collisions
@@ -211,9 +220,7 @@ end
 Game loop
 --]]
 
-function GameObject:update(dt, level)
-  -- shortcut
-  local collisiongrid = level.collisiongrid
+function GameObject:update(dt)
   
   -- object may have several fisix settings
   local fisix = (self.fisix or self)
@@ -244,49 +251,52 @@ function GameObject:update(dt, level)
   if math.abs(self.dx) < 0.01 then self.dx = 0 end
   if math.abs(self.dy) < 0.01 then self.dy = 0 end
   
-  -- check if we're on the ground
-  self.airborne = 
-    ((not collisiongrid:pixelCollision(self.x, self.y + self.h + 1, collide_type)
-    and (not collisiongrid:pixelCollision(self.x + self.w, self.y + self.h + 1, collide_type))))
-  if not self.airborne and self.dy > 0 then
-    if collisiongrid:collision(self, collide_type) then
-      self:snap_from_collision(0, -1, collisiongrid, math.abs(self.dy), collide_type)
-    end
-    self.dy = 0
-  end 
   
-  -- move HORIZONTALLY FIRST
-  if self.dx ~= 0 then
-    local move_x = self.dx * dt
-    local new_x = self.x + move_x
-    self.prevx = self.x
-    -- is new x in collision ?
-    if collisiongrid:collision(self, new_x, self.y) then
-      -- move as far as possible towards new position
-      self:snap_to_collision(useful.sign(self.dx), 0, 
-                        collisiongrid, math.abs(self.dx))
-      self.dx = 0
-    else
-      -- if not move to new position
-      self.x = new_x
-    end
-  end
-  
-  -- move the object VERTICALLY SECOND
-  if self.dy ~= 0 then
-    local move_y = self.dy*dt
-    local new_y = self.y + move_y
-    self.prevy = self.y
-    -- is new y position free ?
-    if collisiongrid:collision(self, self.x, new_y) then
-      -- if not move as far as possible
-      self:snap_to_collision(0, useful.sign(self.dy), collisiongrid, math.abs(self.dy))
+  if self.COLLISIONGRID then
+    -- check if we're on the ground
+    self.airborne = 
+      ((not collisiongrid:pixelCollision(self.x, self.y + self.h + 1, collide_type)
+      and (not collisiongrid:pixelCollision(self.x + self.w, self.y + self.h + 1, collide_type))))
+    if not self.airborne and self.dy > 0 then
+      if collisiongrid:collision(self, collide_type) then
+        self:snap_from_collision(0, -1, collisiongrid, math.abs(self.dy), collide_type)
+      end
       self.dy = 0
-    else
-      -- if so move to new position
-      self.y = new_y
+    end 
+    
+    -- move HORIZONTALLY FIRST
+    if self.dx ~= 0 then
+      local move_x = self.dx * dt
+      local new_x = self.x + move_x
+      self.prevx = self.x
+      -- is new x in collision ?
+      if collisiongrid:collision(self, new_x, self.y) then
+        -- move as far as possible towards new position
+        self:snap_to_collision(useful.sign(self.dx), 0, 
+                          collisiongrid, math.abs(self.dx))
+        self.dx = 0
+      else
+        -- if not move to new position
+        self.x = new_x
+      end
     end
-  end
+    
+    -- move the object VERTICALLY SECOND
+    if self.dy ~= 0 then
+      local move_y = self.dy*dt
+      local new_y = self.y + move_y
+      self.prevy = self.y
+      -- is new y position free ?
+      if collisiongrid:collision(self, self.x, new_y) then
+        -- if not move as far as possible
+        self:snap_to_collision(0, useful.sign(self.dy), collisiongrid, math.abs(self.dy))
+        self.dy = 0
+      else
+        -- if so move to new position
+        self.y = new_y
+      end
+    end
+  end -- self.COLLISIONGRID
 end
 
 function GameObject:draw()
@@ -300,7 +310,7 @@ GameObject.DEBUG_VIEW =
   draw = function(self, target)
     love.graphics.rectangle("line", 
         target.x, target.y, target.w, target.h)
-    love.graphics.print(target:typename(), 
+    love.graphics.print(target.name, 
         target.x, target.y+32)
   end
 }
