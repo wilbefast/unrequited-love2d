@@ -34,11 +34,23 @@ end
 
 function scaling:drawq(img, quad, x, y, rot, sx, sy)
   x, y, rot, sx, sy = (x or 0), (y or 0), (rot or 0), (sx or 1), (sy or 1)
-  love.graphics.drawq(img, quad, x*self.SCALE_MIN, --+ DEFAULT_W*(SCALE_X-SCALE_MIN)/2, 
-                                  y*self.SCALE_MIN, --+ DEFAULT_H*(SCALE_Y-SCALE_MIN)/2, 
+  love.graphics.drawq(img, quad, x*self.SCALE_MIN,
+                                  y*self.SCALE_MIN,
                                   rot, 
                                   sx*self.SCALE_MIN, 
                                   sy*self.SCALE_MIN)
+end
+
+function scaling:rectangle(mode, x, y, w, h)
+  love.graphics.rectangle(mode, x*self.SCALE_MIN,
+                                y*self.SCALE_MIN,
+                                w*self.SCALE_MIN, 
+                                h*self.SCALE_MIN)
+end
+
+function scaling:print(string, x, y)
+  love.graphics.print(string, 
+      x*self.SCALE_MIN, y*self.SCALE_MIN)    
 end
 
 function scaling:setup(desired_w, desired_h, fullscreen)

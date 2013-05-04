@@ -308,9 +308,9 @@ end
 GameObject.DEBUG_VIEW = 
 {
   draw = function(self, target)
-    love.graphics.rectangle("line", 
+    scaling:rectangle("line", 
         target.x, target.y, target.w, target.h)
-    love.graphics.print(target.name, 
+    scaling:print(target.name, 
         target.x, target.y+32)
   end
 }
