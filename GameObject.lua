@@ -230,19 +230,19 @@ function GameObject:update(dt)
   end
   
   -- friction
-  if fisix.FRICTION_X and (fisix.FRICTION_X ~= 0) then
+  if (self.dx ~= 0) and fisix.FRICTION_X and (fisix.FRICTION_X ~= 0) then
     self.dx = self.dx / (math.pow(fisix.FRICTION_X, dt))
   end
-  if fisix.FRICTION_Y and (fisix.FRICTION_Y ~= 0) then
+  if (self.dy ~= 0) and fisix.FRICTION_Y and (fisix.FRICTION_Y ~= 0) then
     self.dy = self.dy / (math.pow(fisix.FRICTION_Y, dt))
   end
   
   -- terminal velocity
   local abs_dx, abs_dy = math.abs(self.dx), math.abs(self.dy)
-  if fisix.MAX_DX and (abs_dx > fisix.MAX_DX) then
+  if (self.dx ~= 0) and fisix.MAX_DX and (abs_dx > fisix.MAX_DX) then
     self.dx = fisix.MAX_DX*useful.sign(self.dx)
   end
-  if fisix.MAX_DY and (abs_dy > fisix.MAX_DY) then
+  if (self.dy ~= 0) and fisix.MAX_DY and (abs_dy > fisix.MAX_DY) then
     self.dy = fisix.MAX_DY*useful.sign(self.dy)
   end
   
@@ -295,7 +295,10 @@ function GameObject:update(dt)
         self.y = new_y
       end
     end
-  end -- self.COLLISIONGRID
+  else -- not self.COLLISIONGRID
+    self.x = self.x + self.dx*dt
+    self.y = self.y + self.dy*dt
+  end
 end
 
 function GameObject:draw()
@@ -309,8 +312,8 @@ GameObject.DEBUG_VIEW =
   draw = function(self, target)
     scaling:rectangle("line", 
         target.x, target.y, target.w, target.h)
-    scaling:print(target.name, 
-        target.x, target.y+32)
+    --scaling:print(target.name, 
+      --  target.x, target.y+32)
   end
 }
 

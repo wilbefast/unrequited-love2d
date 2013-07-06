@@ -134,7 +134,7 @@ end
 
 function useful.signedRand(value)
   local r = math.random()
-  return useful.tri(r < 0.5, value*2*r, value*2*(r-0.5))
+  return useful.tri(r < 0.5, value*2*r, -value*2*(r-0.5))
 end
 
 function useful.iSignedRand(value)
