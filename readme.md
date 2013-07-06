@@ -1,5 +1,7 @@
-"Unrequited" by William ['wilbefast'](http://wilbefast.com) Dyce
+"Unrequited"
 ============
+**William ['wilbefast'](http://wilbefast.com) Dyce**
+
 
 A helper library for [Löve 2D](http://love2d.org).
 
