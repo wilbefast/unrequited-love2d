@@ -40,6 +40,17 @@ function scaling:rectangle(mode, x, y, w, h)
                                 h*self.SCALE_MIN)
 end
 
+function scaling:circle(mode, x, y, r)
+  love.graphics.circle(mode, x*self.SCALE_MIN,
+                                y*self.SCALE_MIN,
+                                r*self.SCALE_MIN)
+end
+
+function scaling:line(x1, y1, x2, y2)
+  love.graphics.line(x1*self.SCALE_MIN, y1*self.SCALE_MIN,
+                     x2*self.SCALE_MIN, y2*self.SCALE_MIN)
+end
+
 function scaling:print(string, x, y, angle, maxwidth, align)
   love.graphics.push()
     love.graphics.scale(self.SCALE_MIN, self.SCALE_MIN)
