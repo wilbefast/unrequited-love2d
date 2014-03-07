@@ -1,4 +1,5 @@
 --[[
+"Unrequited", a Löve 2D extension library
 (C) Copyright 2013 William Dyce
 
 All rights reserved. This program and the accompanying materials

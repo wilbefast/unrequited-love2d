@@ -1,4 +1,5 @@
 --[[
+"Unrequited", a Löve 2D extension library
 (C) Copyright 2013 William Dyce
 
 All rights reserved. This program and the accompanying materials
@@ -17,6 +18,19 @@ local input =
   x = 0,
   y = 0
 }
+
+
+function input:generateTrigger(key, key_accessor)
+	key.previous = key.pressed
+	key.pressed = key_accessor()
+	if key.pressed == key.previous then
+		key.trigger = 0
+	elseif key.pressed then
+		key.trigger = 1
+	else		
+		key.trigger = -1
+	end
+end
 
 function input:update(dt)
   self.x, self.y = 0, 0

@@ -1,4 +1,5 @@
 --[[
+"Unrequited", a Löve 2D extension library
 (C) Copyright 2013 William Dyce
 
 All rights reserved. This program and the accompanying materials
@@ -11,8 +12,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 Lesser General Public License for more details.
 --]]
-
-local audio = {}
+local audio = { }
 
 -- loading
 function audio:load(filename, type)
@@ -20,11 +20,13 @@ function audio:load(filename, type)
   return love.audio.newSource(filepath, type)
 end
 
-function audio:load_sound(filename, n_sources)
+function audio:load_sound(filename, volume, n_sources)
   n_sources = (n_sources or 1)
   self[filename] = {}
   for i = 1, n_sources do 
-    self[filename][i] = self:load(filename, "static")
+    local new_source = self:load(filename, "static") 
+    new_source:setVolume(volume or 1)
+    self[filename][i] = new_source
   end
 end
 
@@ -33,7 +35,7 @@ function audio:load_music(filename)
 end
 
 -- playing
-function audio:play_music(name)
+function audio:play_music(name, volume)
   local new_music = self[name]
   if new_music ~= self.music then
     if self.music then
@@ -41,6 +43,7 @@ function audio:play_music(name)
     end
     new_music:setLooping(true)
     if not self.mute then
+      new_music:setVolume(volume or 1)
       new_music:play()
     end
     self.music = new_music
@@ -69,6 +72,18 @@ function audio:play_sound(name, pitch_shift, x, y, fixed_pitch)
       end
       return
     end
+  end
+end
+
+-- mute
+
+function audio:toggle_music()
+  if not self.music then
+    return
+  elseif self.music:isPaused() then
+    self.music:resume()
+  else
+    self.music:pause()
   end
 end
 

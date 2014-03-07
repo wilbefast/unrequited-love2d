@@ -1,4 +1,5 @@
 --[[
+"Unrequited", a Löve 2D extension library
 (C) Copyright 2013 William Dyce
 
 All rights reserved. This program and the accompanying materials
@@ -19,7 +20,7 @@ IMPORTS
 local Class      = require("hump/class")
 local GameObject = require("GameObject")
 local Animation = require("Animation")
-local AnimationView = require("AnimationView")
+local AnimationView = require("AnimationView")--]]
 
 --[[------------------------------------------------------------
 SPECIAL EFFECT CLASS
@@ -31,13 +32,11 @@ Constructor
 
 local SpecialEffect = Class
 {
-  type  =  GameObject.TYPE["SPECIALEFFECT"],
+  type = GameObject.TYPE.new("SpecialEffect"),
   
-  init = function(self, x, y, anim, speed, follow)
-    self.offx, self.offy = -anim.frame_w/2, -anim.frame_h/2
-      GameObject.init(self, 
-          x + self.offx, y + self.offy, 0, 0)
-    self.view = AnimationView(anim, speed, 1)
+  init = function(self, x, y, anim, speed, offx, offy, follow)
+      GameObject.init(self, x, y, 0, 0)
+    self.view = AnimationView(anim, speed, 1, anim.frame_w/2 + (offx or 0), anim.frame_h/2 + (offy or 0))
     self.follow = follow
   end,
 }
@@ -61,7 +60,11 @@ function SpecialEffect:update(dt, level, view)
 end
 
 function SpecialEffect:draw(view)
+  if self.colourise then
+    self.colourise()
+  end
   self.view:draw(self)
+  love.graphics.setColor(255, 255, 255)
 end
 
 

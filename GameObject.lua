@@ -1,4 +1,5 @@
 --[[
+"Unrequited", a Löve 2D extension library
 (C) Copyright 2013 William Dyce
 
 All rights reserved. This program and the accompanying materials
@@ -30,6 +31,7 @@ local GameObject = Class
 {
   -- container
   INSTANCES = { },
+  NEW_INSTANCES = { },
       
   -- identifiers
   NEXT_ID = 1,
@@ -47,11 +49,7 @@ local GameObject = Class
     self.prevx    = self.x
     self.prevy    = self.y
     
-    -- are there other objects of this type?
-    if (not GameObject.INSTANCES[self.type]) then
-      GameObject.INSTANCES[self.type] = {}
-    end
-    table.insert(GameObject.INSTANCES[self.type], self) 
+    table.insert(GameObject.NEW_INSTANCES, self) 
     
     -- assign identifier
     self.id = GameObject.NEXT_ID
@@ -80,67 +78,107 @@ function GameObject:typename()
   return GameObject.TYPE[self.type]
 end
 
+function GameObject:isType(typename)
+  return (self.type == GameObject.TYPE[typename])
+end
+
 --[[------------------------------------------------------------
 CONTAINER
 --]]------------------------------------------------------------
 
-function GameObject.get(type, i)
-  i = (i or 1)
-  local objects = GameObject.INSTANCES[type] 
-  if objects and (i <= #objects) then
-    return (GameObject.INSTANCES[type][i])
-  else
-    return nil
+function GameObject.purgeAll()
+	useful.map(GameObject.INSTANCES, 
+		function(object)
+			object.purge = true
+		end
+  GameObject.INSTANCES = {}
+  GameObject.NEXT_ID = 1
+end
+
+function GameObject.countSuchThat(predicate)
+	local count = 0
+	useful.map(GameObject.INSTANCES, 
+		function(object)
+			if predicate(object) then
+				count = count + 1
+		end
+	return count
+end
+
+function GameObject.updateAll(dt, ysort, view)
+    -- add new objects
+  for _, object in pairs(GameObject.NEW_INSTANCES) do
+    table.insert(GameObject.INSTANCES, object)
   end
-end
+  GameObject.NEW_INSTANCES = { }
 
-function GameObject.count(type)
-  return #(GameObject.INSTANCES[type])
-end
-
-function GameObject.updateAll(dt, view)
-  
   -- update objects
-  -- ...for each type of object
-  for type, objects_of_type in pairs(GameObject.INSTANCES) do
-    -- ...for each object
-    useful.map(objects_of_type,
-      function(object)
-        -- ...update the object
-        object:update(dt, self, view)
-        -- ...check collisions with other object
-        -- ...... for each other type of object
-        for othertype, objects_of_othertype 
-            in pairs(GameObject.INSTANCES) do
-          if object:collidesType(othertype) then
-            -- ...... for each object of this other type
-            useful.map(objects_of_othertype,
-                function(otherobject)
-                  -- check collisions between objects
-                  if object:isColliding(otherobject) then
-                    object:eventCollision(otherobject, self)
-                  end
-                end)
-          end
-        end  
-    end)
-  end
+  -- ...for each object
+  useful.map(GameObject.INSTANCES,
+    function(object)
+      -- ...update the object
+      object:update(dt, level, view)
+      -- ...check collisions with other objects
+      useful.map(GameObject.INSTANCES,
+          function(otherobject)
+            -- check collisions between objects
+            if object:isColliding(otherobject) then
+              object:eventCollision(otherobject, dt)
+            end
+          end) 
+  end)
+
+	if ysort then
+  	local oi = 1
+  	while oi <= (#GameObject.INSTANCES) do
+    	local obj = GameObject.INSTANCES[oi]
+    	if oi > 1 then
+      	local prev = GameObject.INSTANCES[oi-1]
+      	if (prev.y > obj.y) then
+        	GameObject.INSTANCES[oi] = prev
+        	GameObject.INSTANCES[oi - 1] = obj
+      	end
+    	end
+    	oi = oi + 1
+  	end
+	end
 end
 
 function GameObject.drawAll(view)
-  -- for each type of object
-  for t, object_type in pairs(GameObject.INSTANCES) do
-    -- for each object
-    useful.map(object_type,
-      function(object)
-        -- if the object is in view...
-        if (not view) or object:isColliding(view) then
-          -- ...draw the object
-          object:draw(view)
-        end
-    end)
-  end
+	-- for each object
+  useful.map(GameObject.INSTANCES,
+    function(object)
+      -- if the object is in view...
+      if (not view) or object:isColliding(view) then
+        -- ...draw the object
+        object:draw(view)
+      end
+  end)
 end
+
+function GameObject.mapToAll(f)
+	-- for each object
+  useful.map(GameObject.INSTANCES, f)
+end
+
+function GameObject.trueForAny(predicate)
+	useful.map(GameObject.INSTANCE,
+		function(object)
+			if predicate(object) then
+				return true
+		end
+  return false
+end
+
+function GameObject.trueForAll(predicate)
+	useful.map(GameObject.INSTANCE,
+		function(object)
+			if not predicate(object) then
+				return false
+		end
+	return true
+end
+
 
 
 --[[------------------------------------------------------------
@@ -183,7 +221,7 @@ function GameObject:snap_to_collision(dx, dy, collisiongrid, max, type)
   end
 end
 
-function GameObject:eventCollision(other)
+function GameObject:eventCollision(other, dt)
   -- override me!
 end
 
@@ -197,23 +235,36 @@ function GameObject:isColliding(other)
   if self == other then
     return false
   end
+
+  local result = true
+
+	-- move origin to centre of object
+  self.x, self.y, other.x, other.y = self.x - self.w/2, self.y - self.h/2, other.x - other.w/2, other.y - other.h/2
+
   -- horizontally seperate ? 
   local v1x = (other.x + other.w) - self.x
   local v2x = (self.x + self.w) - other.x
   if useful.sign(v1x) ~= useful.sign(v2x) then
-    return false
+    result = false
   end
   -- vertically seperate ?
   local v1y = (self.y + self.h) - other.y
   local v2y = (other.y + other.h) - self.y
   if useful.sign(v1y) ~= useful.sign(v2y) then
-    return false
+    result = false
   end
   
-  -- in every other case there is a collision
-  return true
+	-- move origin back to top-left corner
+  self.x, self.y, other.x, other.y = self.x + self.w/2, self.y + self.h/2, other.x + other.w/2, other.y + other.h/2
+  
+	-- all done
+	return result
 end
 
+function GameObject:isCollidingPoint(x, y)
+  return (x >= self.x and x <= self.x + self.w
+        and y >= self.y and y <= self.y + self.h)
+end
 
 --[[------------------------------------------------------------
 Game loop
@@ -228,7 +279,7 @@ function GameObject:update(dt)
   if fisix.GRAVITY and self.airborne then
     self.dy = self.dy + fisix.GRAVITY*dt
   end
-  
+
   -- friction
   if (self.dx ~= 0) and fisix.FRICTION_X and (fisix.FRICTION_X ~= 0) then
     self.dx = self.dx / (math.pow(fisix.FRICTION_X, dt))
@@ -251,7 +302,8 @@ function GameObject:update(dt)
   if math.abs(self.dy) < 0.01 then self.dy = 0 end
   
   
-  if self.COLLISIONGRID then
+  if GameObject.COLLISIONGRID then
+    local collisiongrid = GameObject.COLLISIONGRID
     -- check if we're on the ground
     self.airborne = 
       ((not collisiongrid:pixelCollision(self.x, self.y + self.h + 1, collide_type)
@@ -261,7 +313,7 @@ function GameObject:update(dt)
         self:snap_from_collision(0, -1, collisiongrid, math.abs(self.dy), collide_type)
       end
       self.dy = 0
-    end 
+    end
     
     -- move HORIZONTALLY FIRST
     if self.dx ~= 0 then
@@ -312,8 +364,6 @@ GameObject.DEBUG_VIEW =
   draw = function(self, target)
     scaling:rectangle("line", 
         target.x, target.y, target.w, target.h)
-    --scaling:print(target.name, 
-      --  target.x, target.y+32)
   end
 }
 

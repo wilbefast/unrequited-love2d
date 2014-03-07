@@ -1,4 +1,5 @@
 --[[
+"Unrequited", a Löve 2D extension library
 (C) Copyright 2013 William Dyce
 
 All rights reserved. This program and the accompanying materials
@@ -58,12 +59,16 @@ local Animation = Class
 Game loop
 --]]
   
-function Animation:draw(x, y, subimage, flip_x, flip_y, ox, oy)
-  subimage = (math.min(self.n_frames, math.floor(subimage)) 
-              or 1)           
+function Animation:draw(x, y, subimage, flip_x, flip_y, ox, oy, angle)
+  if subimage then
+    subimage = math.min(self.n_frames, math.floor(subimage))
+  else
+    subimage = 1
+  end  
+  
   flip_x = (flip_x or self.flip_x)
   flip_y = (flip_y or self.flip_y)
-  love.graphics.drawq(self.img, self.quads[subimage], x, y, 0,
+  love.graphics.draw(self.img, self.quads[subimage], x, y, angle or self.angle or 0,
       useful.tri(flip_x, -1, 1), 
       useful.tri(flip_y, -1, 1),
       ox, oy)

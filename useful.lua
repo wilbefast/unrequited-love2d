@@ -1,4 +1,5 @@
 --[[
+"Unrequited", a Löve 2D extension library
 (C) Copyright 2013 William Dyce
 
 All rights reserved. This program and the accompanying materials
@@ -76,7 +77,7 @@ function useful.round(x, n)
   else
     -- round to nearest integer
     local floor = math.floor(x)
-    if (x - floor) > 0.5 then
+    if (x - floor) < 0.5 then
       return floor
     else
       return math.ceil(x)
@@ -148,6 +149,25 @@ end
 
 function useful.randIn(table)
   return table[math.random(#table)]
+end
+
+function useful.lerp(a, b, amount)
+  useful.clamp(amount, 0, 1)
+  return ((1-amount)*a + amount*b)
+end
+
+function useful.printf(text, x, y, angle, maxwidth)
+  
+  maxwidth = (maxwidth or 0)/SCALE_MIN
+
+  love.graphics.push()
+    love.graphics.scale(SCALE_MIN, SCALE_MIN)
+    love.graphics.translate(x, y)
+    if angle then
+      love.graphics.rotate(angle)
+    end
+    love.graphics.printf(text, -maxwidth*0.5, 0, maxwidth, "center")
+  love.graphics.pop()
 end
 
 return useful
