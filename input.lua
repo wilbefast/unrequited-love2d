@@ -19,6 +19,9 @@ local input =
   y = 0
 }
 
+function input:reset()
+  -- TODO
+end
 
 function input:generateTrigger(key, key_accessor)
 	key.previous = key.pressed

@@ -19,6 +19,8 @@ IMPORTS
 
 local Class = require("hump/class")
 
+local useful = require("unrequited/useful")
+
 --[[------------------------------------------------------------
 GAMEOBJECT CLASS
 --]]------------------------------------------------------------
@@ -27,17 +29,19 @@ GAMEOBJECT CLASS
 Initialisation
 --]]
 
+-- container
+local __INSTANCES = { }
+local __NEW_INSTANCES = { }
+    
+-- identifiers
+local __NEXT_ID = 1
+
+-- type
+local __TYPE = { }
+
 local GameObject = Class
 {
-  -- container
-  INSTANCES = { },
-  NEW_INSTANCES = { },
-      
-  -- identifiers
-  NEXT_ID = 1,
-  
-  -- type
-  TYPE = { },
+
       
   -- constructor
   init = function(self, x, y, w, h)
@@ -49,11 +53,11 @@ local GameObject = Class
     self.prevx    = self.x
     self.prevy    = self.y
     
-    table.insert(GameObject.NEW_INSTANCES, self) 
+    table.insert(__NEW_INSTANCES, self) 
     
     -- assign identifier
-    self.id = GameObject.NEXT_ID
-    GameObject.NEXT_ID = GameObject.NEXT_ID + 1
+    self.id = __NEXT_ID
+    __NEXT_ID = __NEXT_ID + 1
     self.name = self:typename() .. '(' .. tostring(self.id) .. ')'
     
   end,
@@ -67,19 +71,19 @@ local GameObject = Class
 TYPES
 --]]------------------------------------------------------------
 
-function GameObject.TYPE.new(typename)
-  local type_index = #(GameObject.TYPE) + 1
-  useful.bind(GameObject.TYPE, typename, type_index)
+function GameObject.newType(typename)
+  local type_index = #(__TYPE) + 1
+  useful.bind(__TYPE, typename, type_index)
   return type_index
 end
 
 
 function GameObject:typename()
-  return GameObject.TYPE[self.type]
+  return __TYPE[self.type]
 end
 
 function GameObject:isType(typename)
-  return (self.type == GameObject.TYPE[typename])
+  return (self.type == __TYPE[typename])
 end
 
 --[[------------------------------------------------------------
@@ -87,39 +91,40 @@ CONTAINER
 --]]------------------------------------------------------------
 
 function GameObject.purgeAll()
-	useful.map(GameObject.INSTANCES, 
+	useful.map(__INSTANCES, 
 		function(object)
 			object.purge = true
-		end
-  GameObject.INSTANCES = {}
-  GameObject.NEXT_ID = 1
+		end)
+  __INSTANCES = {}
+  __NEXT_ID = 1
 end
 
 function GameObject.countSuchThat(predicate)
 	local count = 0
-	useful.map(GameObject.INSTANCES, 
+	useful.map(__INSTANCES, 
 		function(object)
 			if predicate(object) then
-				count = count + 1
-		end
+				count = count + 1 
+      end
+    end)
 	return count
 end
 
 function GameObject.updateAll(dt, ysort, view)
     -- add new objects
-  for _, object in pairs(GameObject.NEW_INSTANCES) do
-    table.insert(GameObject.INSTANCES, object)
+  for _, object in pairs(__NEW_INSTANCES) do
+    table.insert(__INSTANCES, object)
   end
-  GameObject.NEW_INSTANCES = { }
+  __NEW_INSTANCES = { }
 
   -- update objects
   -- ...for each object
-  useful.map(GameObject.INSTANCES,
+  useful.map(__INSTANCES,
     function(object)
       -- ...update the object
       object:update(dt, level, view)
       -- ...check collisions with other objects
-      useful.map(GameObject.INSTANCES,
+      useful.map(__INSTANCES,
           function(otherobject)
             -- check collisions between objects
             if object:isColliding(otherobject) then
@@ -130,13 +135,13 @@ function GameObject.updateAll(dt, ysort, view)
 
 	if ysort then
   	local oi = 1
-  	while oi <= (#GameObject.INSTANCES) do
-    	local obj = GameObject.INSTANCES[oi]
+  	while oi <= (#__INSTANCES) do
+    	local obj = __INSTANCES[oi]
     	if oi > 1 then
-      	local prev = GameObject.INSTANCES[oi-1]
+      	local prev = __INSTANCES[oi-1]
       	if (prev.y > obj.y) then
-        	GameObject.INSTANCES[oi] = prev
-        	GameObject.INSTANCES[oi - 1] = obj
+        	__INSTANCES[oi] = prev
+        	__INSTANCES[oi - 1] = obj
       	end
     	end
     	oi = oi + 1
@@ -146,7 +151,7 @@ end
 
 function GameObject.drawAll(view)
 	-- for each object
-  useful.map(GameObject.INSTANCES,
+  useful.map(__INSTANCES,
     function(object)
       -- if the object is in view...
       if (not view) or object:isColliding(view) then
@@ -158,24 +163,26 @@ end
 
 function GameObject.mapToAll(f)
 	-- for each object
-  useful.map(GameObject.INSTANCES, f)
+  useful.map(__INSTANCES, f)
 end
 
 function GameObject.trueForAny(predicate)
-	useful.map(GameObject.INSTANCE,
+	useful.map(__INSTANCES,
 		function(object)
 			if predicate(object) then
 				return true
-		end
+      end
+		end)
   return false
 end
 
 function GameObject.trueForAll(predicate)
-	useful.map(GameObject.INSTANCE,
+	useful.map(__INSTANCES,
 		function(object)
 			if not predicate(object) then
 				return false
-		end
+      end
+		end)
 	return true
 end
 

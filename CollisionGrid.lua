@@ -18,8 +18,7 @@ IMPORTS
 --]]------------------------------------------------------------
 
 local Class = require("hump/class")
-local Tile = require("Tile")
-local useful = require("useful")
+local useful = require("unrequited/useful")
 
 --[[------------------------------------------------------------
 COLLISIONGRID CLASS

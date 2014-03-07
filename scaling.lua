@@ -16,30 +16,21 @@ Lesser General Public License for more details.
 
 local scaling = 
 { 
-  DEFAULT_W = 1280,
-  DEFAULT_H = 720,
+  DEFAULT_W = 1280, -- should be overwritten by setup
+  DEFAULT_H = 720,  -- should be overwritten by setup
   SCALE_X = 1, 
   SCALE_Y = 1, 
   SCALE_MIN = 1, 
   SCALE_MAX = 1
 }
 
-function scaling:draw(img, x, y, rot, sx, sy)
+function scaling:draw(img, quad, x, y, rot, sx, sy)
   x, y, rot, sx, sy = (x or 0), (y or 0), (rot or 0), (sx or 1), (sy or 1)
-  love.graphics.draw(img, x*self.SCALE_MIN + self.DEFAULT_W*(self.SCALE_X-self.SCALE_MIN)/2, 
+  love.graphics.draw(img, quad, x*self.SCALE_MIN + self.DEFAULT_W*(self.SCALE_X-self.SCALE_MIN)/2, 
                           y*self.SCALE_MIN + self.DEFAULT_H*(self.SCALE_Y-self.SCALE_MIN)/2, 
                           rot, 
                           sx*self.SCALE_MIN, 
                           sy*self.SCALE_MIN)
-end
-
-function scaling:drawq(img, quad, x, y, rot, sx, sy)
-  x, y, rot, sx, sy = (x or 0), (y or 0), (rot or 0), (sx or 1), (sy or 1)
-  love.graphics.drawq(img, quad, x*self.SCALE_MIN,
-                                  y*self.SCALE_MIN,
-                                  rot, 
-                                  sx*self.SCALE_MIN, 
-                                  sy*self.SCALE_MIN)
 end
 
 function scaling:rectangle(mode, x, y, w, h)
@@ -49,15 +40,25 @@ function scaling:rectangle(mode, x, y, w, h)
                                 h*self.SCALE_MIN)
 end
 
-function scaling:print(string, x, y)
-  love.graphics.print(string, 
-      x*self.SCALE_MIN, y*self.SCALE_MIN)    
+function scaling:print(string, x, y, angle, maxwidth, align)
+  love.graphics.push()
+    love.graphics.scale(self.SCALE_MIN, self.SCALE_MIN)
+    love.graphics.translate(x, y)
+    if angle then
+      love.graphics.rotate(angle)
+    end
+    if maxwidth and align then
+      love.graphics.printf(text, 0, 0, maxwidth, align)
+    else
+      love.graphics.print(text, 0, 0)
+    end
+  love.graphics.pop()
 end
 
 function scaling:setup(desired_w, desired_h, fullscreen)
   self.DEFAULT_W, self.DEFAULT_H = desired_w, desired_h
   -- get and sort the available screen modes from best to worst
-  local modes = love.graphics.getModes()
+  local modes = love.window.getFullscreenModes()
   table.sort(modes, function(a, b) 
     return ((a.width*a.height > b.width*b.height) 
           and (a.width <= desired_w) and a.height <= desired_h) end)
@@ -65,12 +66,16 @@ function scaling:setup(desired_w, desired_h, fullscreen)
   -- try each mode from best to worst
   for i, m in ipairs(modes) do
     
-    if DEBUG then
-      m = modes[#modes - 1]
+    if LOW_RESOLUTION then
+      if #modes > 1 then
+        m = modes[#modes - 1] -- lowest first
+      else
+        m = { width = 640, height = 480 } -- fallback
+      end
     end
     
     -- try to set the resolution
-    local success = love.graphics.setMode(m.width, m.height, fullscreen)
+    local success = love.window.setMode(m.width, m.height, { fullscreen = FULLSCREEN })
     if success then
       self.SCALE_X, self.SCALE_Y = m.width/desired_w, m.height/desired_h
       self.SCALE_MIN, self.SCALE_MAX = math.min(self.SCALE_X, self.SCALE_Y), 
@@ -81,7 +86,6 @@ function scaling:setup(desired_w, desired_h, fullscreen)
   end
   return false -- failure!
 end
-
 
 
 return scaling;

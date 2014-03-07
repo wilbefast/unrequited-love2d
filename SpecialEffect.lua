@@ -19,8 +19,8 @@ IMPORTS
 
 local Class      = require("hump/class")
 local GameObject = require("GameObject")
-local Animation = require("Animation")
-local AnimationView = require("AnimationView")--]]
+local Animation = require("unrequited/Animation")
+local AnimationView = require("unrequited/AnimationView")
 
 --[[------------------------------------------------------------
 SPECIAL EFFECT CLASS

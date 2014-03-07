@@ -170,4 +170,9 @@ function useful.printf(text, x, y, angle, maxwidth)
   love.graphics.pop()
 end
 
+function useful.getBackgroundColorWithAlpha(a)
+  local r, g, b = love.graphics.getBackgroundColor()
+  return r, g, b, a
+end
+
 return useful

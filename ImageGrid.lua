@@ -18,7 +18,7 @@ IMPORTS
 --]]------------------------------------------------------------
 
 local Class = require("hump/class")
-local useful = require("useful")
+local useful = require("unrequited/useful")
 
 --[[------------------------------------------------------------
 TILESET CLASS
