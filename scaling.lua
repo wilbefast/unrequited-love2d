@@ -40,10 +40,22 @@ function scaling:rectangle(mode, x, y, w, h)
                                 h*self.SCALE_MIN)
 end
 
+function scaling:normalisedRectangle(mode, x, y, w, h)
+  love.graphics.rectangle(mode, self.DEFAULT_W*x*self.SCALE_MIN,
+                                self.DEFAULT_H*y*self.SCALE_MIN,
+                                self.DEFAULT_W*w*self.SCALE_MIN, 
+                                self.DEFAULT_H*h*self.SCALE_MIN)
+end
+
 function scaling:circle(mode, x, y, r)
   love.graphics.circle(mode, x*self.SCALE_MIN,
                                 y*self.SCALE_MIN,
                                 r*self.SCALE_MIN)
+end
+function scaling:normalisedCircle(mode, x, y, r)
+  love.graphics.circle(mode, x*self.DEFAULT_W*self.SCALE_MIN,
+                                self.DEFAULT_H*y*self.SCALE_MIN,
+                                self.DEFAULT_W*r*self.SCALE_MIN)
 end
 
 function scaling:line(x1, y1, x2, y2)
@@ -86,7 +98,7 @@ function scaling:setup(desired_w, desired_h, fullscreen)
     end
     
     -- try to set the resolution
-    local success = love.window.setMode(m.width, m.height, { fullscreen = FULLSCREEN })
+    local success = love.window.setMode(m.width, m.height, { fullscreen = fullscreen })
     if success then
       self.SCALE_X, self.SCALE_Y = m.width/desired_w, m.height/desired_h
       self.SCALE_MIN, self.SCALE_MAX = math.min(self.SCALE_X, self.SCALE_Y), 
