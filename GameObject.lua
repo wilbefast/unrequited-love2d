@@ -18,6 +18,7 @@ IMPORTS
 --]]------------------------------------------------------------
 
 local Class = require("hump/class")
+local vector = require("hump/vector-light")
 
 local useful = require("unrequited/useful")
 local scaling = require("unrequited/scaling")
@@ -45,10 +46,14 @@ local GameObject = Class
 
       
   -- constructor
-  init = function(self, x, y, w, h)
+  init = function(self, x, y, w_or_r, optional_h)
     -- save attributes
-    self.w        = (w or 0)
-    self.h        = (h or 0)
+    if optional_h then
+      self.w = (w_or_r or 0)
+      self.h = optional_h
+    else
+      self.r = (w_or_r or 0)
+    end
     self.x        = x
     self.y        = y
     self.prevx    = self.x
@@ -326,40 +331,42 @@ function GameObject:eventCollision(other, dt)
   -- override me!
 end
 
-function GameObject:collidesType(type)
-  -- override me!
-  return false
-end
-
 function GameObject:isColliding(other)
   -- no self collisions
   if self == other then
     return false
   end
 
-  local result = true
+  -- circle-circle collisions ?
+  if self.r and other.r then
+    return (vector.dist(self.x, self.y, other.x, other.y) < self.r + other.r)
 
-	-- move origin to centre of object
-  self.x, self.y, other.x, other.y = self.x - self.w/2, self.y - self.h/2, other.x - other.w/2, other.y - other.h/2
+  -- box-box collisions ?
+  elseif self.w and self.h and other.w and other.h then
+    local result = true
 
-  -- horizontally seperate ? 
-  local v1x = (other.x + other.w) - self.x
-  local v2x = (self.x + self.w) - other.x
-  if useful.sign(v1x) ~= useful.sign(v2x) then
-    result = false
+  	-- move origin to centre of object
+    self.x, self.y, other.x, other.y = self.x - self.w/2, self.y - self.h/2, other.x - other.w/2, other.y - other.h/2
+
+    -- horizontally seperate ? 
+    local v1x = (other.x + other.w) - self.x
+    local v2x = (self.x + self.w) - other.x
+    if useful.sign(v1x) ~= useful.sign(v2x) then
+      result = false --! don't return here as we need to move back the origin
+    end
+    -- vertically seperate ?
+    local v1y = (self.y + self.h) - other.y
+    local v2y = (other.y + other.h) - self.y
+    if useful.sign(v1y) ~= useful.sign(v2y) then
+      result = false --! don't return here as we need to move back the origin
+    end
+    
+  	-- move origin back to top-left corner
+    self.x, self.y, other.x, other.y = self.x + self.w/2, self.y + self.h/2, other.x + other.w/2, other.y + other.h/2
+    
+  	-- all done
+  	return result
   end
-  -- vertically seperate ?
-  local v1y = (self.y + self.h) - other.y
-  local v2y = (other.y + other.h) - self.y
-  if useful.sign(v1y) ~= useful.sign(v2y) then
-    result = false
-  end
-  
-	-- move origin back to top-left corner
-  self.x, self.y, other.x, other.y = self.x + self.w/2, self.y + self.h/2, other.x + other.w/2, other.y + other.h/2
-  
-	-- all done
-	return result
 end
 
 function GameObject:isCollidingPoint(x, y)
