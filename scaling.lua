@@ -41,10 +41,10 @@ function scaling:rectangle(mode, x, y, w, h)
 end
 
 function scaling:normalisedRectangle(mode, x, y, w, h)
-  love.graphics.rectangle(mode, self.DEFAULT_W*x*self.SCALE_MIN,
-                                self.DEFAULT_H*y*self.SCALE_MIN,
-                                self.DEFAULT_W*w*self.SCALE_MIN, 
-                                self.DEFAULT_H*h*self.SCALE_MIN)
+  love.graphics.rectangle(mode, self.DEFAULT_W*x*self.SCALE_X,
+                                self.DEFAULT_H*y*self.SCALE_Y,
+                                self.DEFAULT_W*w*self.SCALE_X, 
+                                self.DEFAULT_H*h*self.SCALE_Y)
 end
 
 function scaling:circle(mode, x, y, r)
@@ -53,14 +53,17 @@ function scaling:circle(mode, x, y, r)
                                 r*self.SCALE_MIN)
 end
 function scaling:normalisedCircle(mode, x, y, r)
-  love.graphics.circle(mode, x*self.DEFAULT_W*self.SCALE_MIN,
-                                self.DEFAULT_H*y*self.SCALE_MIN,
+  love.graphics.circle(mode, x*self.DEFAULT_W*self.SCALE_X,
+                                self.DEFAULT_H*y*self.SCALE_Y,
                                 self.DEFAULT_W*r*self.SCALE_MIN)
 end
 
 function scaling:line(x1, y1, x2, y2)
-  love.graphics.line(x1*self.SCALE_MIN, y1*self.SCALE_MIN,
-                     x2*self.SCALE_MIN, y2*self.SCALE_MIN)
+  local width = love.graphics.getLineWidth()
+    love.graphics.setLineWidth(width*self.SCALE_MIN)
+    love.graphics.line(x1*self.SCALE_MIN, y1*self.SCALE_MIN,
+                       x2*self.SCALE_MIN, y2*self.SCALE_MIN)
+  love.graphics.setLineWidth(width)
 end
 
 function scaling:print(string, x, y, angle, maxwidth, align)
