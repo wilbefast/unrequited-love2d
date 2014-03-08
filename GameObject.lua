@@ -90,6 +90,10 @@ end
 CONTAINER
 --]]------------------------------------------------------------
 
+--[[------------------------------------------------------------
+Modification
+--]]--
+
 function GameObject.purgeAll()
 	useful.map(__INSTANCES, 
 		function(object)
@@ -97,17 +101,6 @@ function GameObject.purgeAll()
 		end)
   __INSTANCES = {}
   __NEXT_ID = 1
-end
-
-function GameObject.countSuchThat(predicate)
-	local count = 0
-	useful.map(__INSTANCES, 
-		function(object)
-			if predicate(object) then
-				count = count + 1 
-      end
-    end)
-	return count
 end
 
 function GameObject.updateAll(dt, ysort, view)
@@ -162,31 +155,131 @@ function GameObject.drawAll(view)
 end
 
 function GameObject.mapToAll(f)
-	-- for each object
-  useful.map(__INSTANCES, f)
+  for i, object in ipairs(__INSTANCES) do
+    f(object, i)
+  end
 end
 
+function GameObject.mapToType(typename, f)
+  local t = __TYPE[typename]
+  for i, object in ipairs(__INSTANCES) do
+    if (object.type == t) then
+      f(object, i)
+    end
+  end
+end
+
+--[[------------------------------------------------------------
+Query
+--]]--
+
+--[[--
+count
+--]]--
+
+function GameObject.countSuchThat(predicate)
+  local count = 0
+  for i, object in ipairs(__INSTANCES) do
+    if predicate(object) then
+      count = count + 1 
+    end
+  end
+  return count
+end
+
+function GameObject.countOfTypeSuchThat(typename, predicate)
+  local t = __TYPE[typename]
+  local count = 0
+  for i, object in ipairs(__INSTANCES) do
+    if (object.type == t) and predicate(object) then
+      count = count + 1 
+    end
+  end
+  return count
+end
+
+--[[--
+check predicate
+--]]--
+
 function GameObject.trueForAny(predicate)
-	useful.map(__INSTANCES,
-		function(object)
-			if predicate(object) then
-				return true
-      end
-		end)
+  for i, object in ipairs(__INSTANCES) do
+    if not predicate(object) then
+      return true
+    end
+  end
+  return false
+end
+
+function GameObject.trueForAnyOfType(typename, predicate)
+  local t = __TYPE[typename]
+  for i, object in ipairs(__INSTANCES) do
+    if (object.type == t) and predicate(object) then
+      return true
+    end
+  end
   return false
 end
 
 function GameObject.trueForAll(predicate)
-	useful.map(__INSTANCES,
-		function(object)
-			if not predicate(object) then
-				return false
-      end
-		end)
-	return true
+	for i, object in ipairs(__INSTANCES) do
+    if not predicate(object) then
+      return false
+    end
+  end
+  return true
+end
+
+function GameObject.trueForAllOfType(typename, predicate)
+  local t = __TYPE[typename]
+  for i, object in ipairs(__INSTANCES) do
+    if (object.type == t) and (not predicate(object)) then
+      return false
+    end
+  end
+  return true
 end
 
 
+--[[--
+find
+--]]--
+
+function GameObject.getObjectOfType(typename, index)
+  if (not index) or (index < 1) then
+    index = 1
+  end
+  local count = 0
+  local t = __TYPE[typename]
+  for i, object in ipairs(__INSTANCES) do
+    if (object.type == t) then
+      count = count + 1
+      if count == index then
+        return object
+      end
+    end
+  end
+  return nil
+end
+
+function GameObject.getFirstSuchThat(predicate)
+  for i, object in ipairs(__INSTANCES) do
+    if predicate(object) then
+      return object
+    end
+  end
+  return nil
+end
+
+function GameObject.getFirstOfTypeSuchThat(typename, predicate)
+  local t = __TYPE[typename]
+  for i, object in ipairs(__INSTANCES) do
+    if (object.type == t) and predicate(object) then
+      return object
+    end
+  end
+  return nil
+end
 
 --[[------------------------------------------------------------
 METHODS
