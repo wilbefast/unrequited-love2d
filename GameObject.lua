@@ -388,12 +388,14 @@ collision queries
 
 function  GameObject.lineCast(x1, y1, x2, y2, f)
   for i, object in ipairs(__INSTANCES) do
-    if object.r then
-      if useful.lineCircleCollision(x1, y1, x2, y2, object.x, object.y, object.r) then
-        f(object)
+    if not object.purge then
+      if object.r then
+        if useful.lineCircleCollision(x1, y1, x2, y2, object.x, object.y, object.r) then
+          f(object)
+        end
+      else
+        -- TODO
       end
-    else
-      -- TODO
     end
   end
 end
@@ -401,7 +403,7 @@ end
 function  GameObject.lineCastForType(typename, x1, y1, x2, y2, f)
   local t = __TYPE[typename]
   for i, object in ipairs(__INSTANCES) do
-    if object.type == t then
+    if (object.type == t) and (not object.purge) then
       if object.r then
         if useful.lineCircleCollision(x1, y1, x2, y2, object.x, object.y, object.r) then
           f(object)
