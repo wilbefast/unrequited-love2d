@@ -24,6 +24,9 @@ function useful.map(objects, ...)
     local obj = objects[oi]
     -- check if the object needs to be removed
     if obj.purge then
+      if obj.onPurge then 
+        obj:onPurge()
+      end
       table.remove(objects, oi)
     else
       -- for each function...
@@ -173,6 +176,35 @@ end
 function useful.getBackgroundColorWithAlpha(a)
   local r, g, b = love.graphics.getBackgroundColor()
   return r, g, b, a
+end
+
+function useful.dot(x1, y1, x2, y2)
+  return x1*x2 + y1*y2
+end
+
+function useful.dist2(x1, y1, x2, y2)
+  local dx, dy = x2-x1, y2-y1
+  return dx*dx + dy*dy
+end
+
+function useful.lineCircleCollision(x1, y1, x2, y2, cx, cy, cr)
+  -- project the circle centre onto the line
+  local toCircleX, toCircleY = cx-x1, cy-y1
+  local alongLineX, alongLineY = x2-x1, y2-y1
+  local projlength = useful.dot(toCircleX, toCircleY, alongLineX, alongLineY)
+                    /useful.dot(alongLineX, alongLineY, alongLineX, alongLineY)
+  local projx, projy = x1 + alongLineX*projlength, y1 + alongLineY*projlength
+
+  -- calculate the distance for the projection to the centre of the circle
+  local projToCircle2 = useful.dist2(x1, y1, cx, cy) - useful.dist2(x1, y1, projx, projy)
+
+  -- true if the radius is larger than this distance
+  return (projToCircle2 < cr*cr)
+end
+
+function useful.lineBoxCollision(x1, y1, x2, y2, bx, by, bw, bh)
+  -- TODO
+  return false
 end
 
 return useful

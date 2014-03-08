@@ -66,7 +66,7 @@ local GameObject = Class
     __NEXT_ID = __NEXT_ID + 1
 
     -- assign type if one was not specified
-    self.type = (self.type or "Undefined")
+    self.type = (self.type or __TYPE["Undefined"])
     self.name = self:typename() .. '(' .. tostring(self.id) .. ')'
     
   end,
@@ -297,7 +297,11 @@ METHODS
 
 --[[----------------------------------------------------------------------------
 Collisions
---]]
+--]]--
+
+--[[--
+instance collisions
+--]]--
 
 function GameObject:centreOn(x, y)
   self.x, self.y = x - self.w/2, y - self.h/2
@@ -376,6 +380,37 @@ end
 function GameObject:isCollidingPoint(x, y)
   return (x >= self.x and x <= self.x + self.w
         and y >= self.y and y <= self.y + self.h)
+end
+
+--[[--
+collision queries
+--]]--
+
+function  GameObject.lineCast(x1, y1, x2, y2, f)
+  for i, object in ipairs(__INSTANCES) do
+    if object.r then
+      if useful.lineCircleCollision(x1, y1, x2, y2, object.x, object.y, object.r) then
+        f(object)
+      end
+    else
+      -- TODO
+    end
+  end
+end
+
+function  GameObject.lineCastForType(typename, x1, y1, x2, y2, f)
+  local t = __TYPE[typename]
+  for i, object in ipairs(__INSTANCES) do
+    if object.type == t then
+      if object.r then
+        if useful.lineCircleCollision(x1, y1, x2, y2, object.x, object.y, object.r) then
+          f(object)
+        end
+      else
+        -- TODO
+      end
+    end
+  end
 end
 
 --[[------------------------------------------------------------
