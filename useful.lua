@@ -193,6 +193,16 @@ function useful.lineCircleCollision(x1, y1, x2, y2, cx, cy, cr)
   local alongLineX, alongLineY = x2-x1, y2-y1
   local projlength = useful.dot(toCircleX, toCircleY, alongLineX, alongLineY)
                     /useful.dot(alongLineX, alongLineY, alongLineX, alongLineY)
+
+  -- projection is 'before' the segment ?
+  if projlength < 0 then
+    return (useful.dist2(x1, y1, cx, cy) < cr*cr)
+  -- projection is 'after' the segment ?
+  elseif projlength > 1 then
+    return (useful.dist2(x2, y2, cx, cy) < cr*cr)
+  end
+
+  -- projection is somewhere on the segment
   local projx, projy = x1 + alongLineX*projlength, y1 + alongLineY*projlength
 
   -- calculate the distance for the projection to the centre of the circle
