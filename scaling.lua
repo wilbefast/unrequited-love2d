@@ -110,5 +110,9 @@ function scaling:setup(desired_w, desired_h, fullscreen)
   return false -- failure!
 end
 
+function scaling:getMousePosition()
+  local x, y = love.mouse.getPosition()
+  return x / scaling.SCALE_MIN, y / scaling.SCALE_MIN
+end
 
 return scaling;
