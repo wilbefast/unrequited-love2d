@@ -71,9 +71,9 @@ function scaling:print(string, x, y, angle, maxwidth, align)
       love.graphics.rotate(angle)
     end
     if maxwidth and align then
-      love.graphics.printf(text, 0, 0, maxwidth, align)
+      love.graphics.printf(string, 0, 0, maxwidth, align)
     else
-      love.graphics.print(text, 0, 0)
+      love.graphics.print(string, 0, 0)
     end
   love.graphics.pop()
 end

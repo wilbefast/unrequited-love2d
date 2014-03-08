@@ -20,6 +20,7 @@ IMPORTS
 local Class = require("hump/class")
 
 local useful = require("unrequited/useful")
+local scaling = require("unrequited/scaling")
 
 --[[------------------------------------------------------------
 GAMEOBJECT CLASS
