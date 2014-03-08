@@ -64,6 +64,9 @@ local GameObject = Class
     -- assign identifier
     self.id = __NEXT_ID
     __NEXT_ID = __NEXT_ID + 1
+
+    -- assign type if one was not specified
+    self.type = (self.type or "Undefined")
     self.name = self:typename() .. '(' .. tostring(self.id) .. ')'
     
   end,
@@ -82,6 +85,7 @@ function GameObject.newType(typename)
   useful.bind(__TYPE, typename, type_index)
   return type_index
 end
+GameObject.newType("Undefined")
 
 
 function GameObject:typename()
@@ -470,8 +474,14 @@ end
 GameObject.DEBUG_VIEW = 
 {
   draw = function(self, target)
-    scaling:rectangle("line", 
+    if target.r then
+      scaling:circle("line",
+        target.x, target.y, target.r)
+    elseif target.w and target.h then
+      scaling:rectangle("line", 
         target.x, target.y, target.w, target.h)
+    end
+    
   end
 }
 
