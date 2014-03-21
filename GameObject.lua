@@ -179,6 +179,29 @@ function GameObject.mapToType(typename, f)
   end
 end
 
+function GameObject.mapToPair(f)
+  for i = 1, #__INSTANCES do
+    for j = i+1, (#__INSTANCES)-1 do
+      f(i, j)
+    end
+  end
+end
+
+function GameObject.mapToTypePair(typename1, typename2, f)
+  local t1, t2 = __TYPE[typename1], __TYPE[typename2]
+  for i = 1, #__INSTANCES do
+    local object1 = __INSTANCES[i]
+    if object1.type == t1 then
+      for j = i+1, (#__INSTANCES) do
+        local object2 = __INSTANCES[j]
+        if object2.type == t2 then
+          f(object1, object2)
+        end
+      end
+    end
+  end
+end
+
 --[[------------------------------------------------------------
 Query
 --]]--
@@ -347,7 +370,7 @@ function GameObject:isColliding(other)
 
   -- circle-circle collisions ?
   if self.r and other.r then
-    return (vector.dist(self.x, self.y, other.x, other.y) < self.r + other.r)
+    return (vector.dist2(self.x, self.y, other.x, other.y) < useful.sqr(self.r + other.r))
 
   -- box-box collisions ?
   elseif self.w and self.h and other.w and other.h then
@@ -414,6 +437,21 @@ function  GameObject.lineCastForType(typename, x1, y1, x2, y2, f)
     end
   end
 end
+
+--[[--
+Snap
+--]]--
+
+function  GameObject:snapInsideBoundary(bx, by, bw, bh)
+  if self.r then
+    self.x = math.max(bx + self.r, math.min(self.x, bx + bw - self.r))
+    self.y = math.max(by + self.r, math.min(self.y, by + bh - self.r))
+  else
+    self.x = math.max(bx + self.w*0.5, math.min(self.x, bx + bw - self.w*0.5))
+    self.y = math.max(by + self.h*0.5, math.min(self.y, by + bh - self.h*0.5))
+  end
+end
+
 
 --[[------------------------------------------------------------
 Game loop
