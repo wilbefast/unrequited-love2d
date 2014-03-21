@@ -40,7 +40,7 @@ function Controller.updateAll(dt)
   end
 end
 
-function Controller:addAxis(name, fnegative, fpositive)
+function Controller:addAxis(name, fpositive, fnegative)
   local axis = {
     name = name, 
     __fnegative = fnegative, 
@@ -65,14 +65,12 @@ end
 
 function Controller:update(dt)
   for _, axis in pairs(self.axes) do    
-    axis.position = 0
-    if axis.__fpositive() then
-      axis.position = axis.position + 1
+    if axis.__fnegative then
+      axis.position = ((axis.__fpositive() and 1) or 0) - ((axis.__fnegative() and 1) or 0)
+    else
+      axis.position = __fpositive()
     end
-    if axis.__fnegative() then
-      axis.position = axis.position - 1
-    end
-    
+     
     -- shortcut access
     self[axis.name] = axis.position
   end
@@ -96,11 +94,11 @@ end
 -- useful default keyboard controller
 local KEYBOARD = Controller()
 KEYBOARD:addAxis("x", 
-  function() return love.keyboard.isDown("left", "q", "a") end,
-  function() return love.keyboard.isDown("right", "d") end)
+  function() return love.keyboard.isDown("right", "d") end,
+  function() return love.keyboard.isDown("left", "q", "a") end)
 KEYBOARD:addAxis("y", 
-  function() return love.keyboard.isDown("up", "z", "w") end,
-  function() return love.keyboard.isDown("down", "s") end)
+  function() return love.keyboard.isDown("down", "s") end,
+  function() return love.keyboard.isDown("up", "z", "w") end)
 Controller.KEYBOARD = KEYBOARD
 
 --[[------------------------------------------------------------
