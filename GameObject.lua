@@ -275,7 +275,7 @@ end
 
 
 --[[--
-find
+find matching
 --]]--
 
 function GameObject.getObjectOfType(typename, index)
@@ -313,6 +313,10 @@ function GameObject.getFirstOfTypeSuchThat(typename, predicate)
   end
   return nil
 end
+
+--[[--
+find min/max
+--]]--
 
 function GameObject.getMost(evaluator)
   local best, best_value = nil, -math.huge
@@ -362,6 +366,64 @@ function GameObject.getLeastOfType(typename, evaluator)
     end
   end
   return best
+end
+
+--[[--
+find nearest/furthest
+--]]--
+
+function GameObject.getNearest(x, y)
+  local nearest, nearest_distance2 = nil, math.huge
+  for i, object in ipairs(__INSTANCES) do
+    local distance2 = vector.dist2(x, y, object.x, object.y)
+    if distance2 < nearest_distance2 then
+      nearest, nearest_distance2 = object, distance2
+    end
+  end
+  return nearest
+end
+
+function GameObject.getFurthest(x, y)
+  local furthest, furthest_distance2 = nil, math.huge
+  for i, object in ipairs(__INSTANCES) do
+    local distance2 = vector.dist2(x, y, object.x, object.y)
+    if distance2 > nearest_distance2 then
+      furthest, furthest_distance2 = object, distance2
+    end
+  end
+  return furthest
+end
+
+function GameObject.getNearestOfType(typename, x, y, suchThat)
+  local t = __TYPE[typename]
+  local nearest, nearest_distance2 = nil, math.huge
+  for i, object in ipairs(__INSTANCES) do
+    if object.type == t then
+      if (not suchThat) or suchThat(object) then
+        local distance2 = vector.dist2(x, y, object.x, object.y)
+        if distance2 < nearest_distance2 then
+          nearest, nearest_distance2 = object, distance2
+        end
+      end
+    end
+  end
+  return nearest
+end
+
+function GameObject.getFurthestOfType(typename, x, y, suchThat)
+  local t = __TYPE[typename]
+  local furthest, furthest_distance2 = nil, math.huge
+  for i, object in ipairs(__INSTANCES) do
+    if object.type == t then
+      if (not suchThat) or suchThat(object) then
+        local distance2 = vector.dist2(x, y, object.x, object.y)
+        if distance2 > nearest_distance2 then
+          furthest, furthest_distance2 = object, distance2
+        end
+      end
+    end
+  end
+  return furthest
 end
 
 --[[------------------------------------------------------------
