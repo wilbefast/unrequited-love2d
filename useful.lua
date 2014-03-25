@@ -217,4 +217,8 @@ function useful.lineBoxCollision(x1, y1, x2, y2, bx, by, bw, bh)
   return false
 end
 
+function useful.bindWhite()
+  love.graphics.setColor(255, 255, 255)
+end
+
 return useful

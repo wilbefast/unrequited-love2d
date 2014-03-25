@@ -314,6 +314,56 @@ function GameObject.getFirstOfTypeSuchThat(typename, predicate)
   return nil
 end
 
+function GameObject.getMost(evaluator)
+  local best, best_value = nil, -math.huge
+  for i, object in ipairs(__INSTANCES) do
+    local value = evaluator(object)
+    if value > best_value then
+      best, best_value = object, value
+    end
+  end
+  return best
+end
+
+function GameObject.getMostOfType(typename, evaluator)
+  local t = __TYPE[typename]
+  local best, best_value = nil, -math.huge
+  for i, object in ipairs(__INSTANCES) do
+    if object.type == t then
+      local value = evaluator(object)
+      if value > best_value then
+        best, best_value = object, value
+      end
+    end
+  end
+  return best
+end
+
+function GameObject.getLeast(evaluator)
+  local best, best_value = nil, math.huge
+  for i, object in ipairs(__INSTANCES) do
+    local value = evaluator(object)
+    if value < best_value then
+      best, best_value = object, value
+    end
+  end
+  return best
+end
+
+function GameObject.getLeastOfType(typename, evaluator)
+  local t = __TYPE[typename]
+  local best, best_value = nil, math.huge
+  for i, object in ipairs(__INSTANCES) do
+    if object.type == t then
+      local value = evaluator(object)
+      if value < best_value then
+        best, best_value = object, value
+      end
+    end
+  end
+  return best
+end
+
 --[[------------------------------------------------------------
 METHODS
 --]]------------------------------------------------------------
