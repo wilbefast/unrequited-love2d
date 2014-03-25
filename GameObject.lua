@@ -451,8 +451,15 @@ function GameObject:isColliding(other)
 end
 
 function GameObject:isCollidingPoint(x, y)
-  return (x >= self.x and x <= self.x + self.w
-        and y >= self.y and y <= self.y + self.h)
+  if self.r  then
+    local dx, dy = self.x - x, self.y - y
+    return (dx*dx + dy*dy < self.r*self.r)
+  elseif self.w and self.h then
+    return (x >= self.x and x <= self.x + self.w
+          and y >= self.y and y <= self.y + self.h)
+  else
+    return false
+  end
 end
 
 --[[--
