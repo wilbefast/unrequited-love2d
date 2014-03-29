@@ -137,13 +137,15 @@ function useful.bind(table, a, b)
 end
 
 function useful.signedRand(value)
+  value = (value or 1)
   local r = math.random()
   return useful.tri(r < 0.5, value*2*r, -value*2*(r-0.5))
 end
 
 function useful.iSignedRand(value)
+  value = (value or 1)
   local r = math.random()
-  return math.floor(useful.tri(r < 0.5, value*2*r, value*2*(r-0.5)))
+  return (((r > 0.5) and value) or -value)
 end
 
 function useful.clamp(val, lower_bound, upper_bound)
