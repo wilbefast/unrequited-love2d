@@ -91,7 +91,10 @@ function Controller:update(dt)
   end
 end
 
--- useful default keyboard controller
+--[[------------------------------------------------------------
+Default keyboard controls
+--]]--
+
 local KEYBOARD = Controller()
 KEYBOARD:addAxis("x", 
   function() return love.keyboard.isDown("right", "d") end,
@@ -100,6 +103,24 @@ KEYBOARD:addAxis("y",
   function() return love.keyboard.isDown("down", "s") end,
   function() return love.keyboard.isDown("up", "z", "w") end)
 Controller.KEYBOARD = KEYBOARD
+
+local KEYBOARD_LEFT = Controller()
+KEYBOARD_LEFT:addAxis("x", 
+  function() return love.keyboard.isDown("d") end,
+  function() return love.keyboard.isDown("q", "a") end)
+KEYBOARD_LEFT:addAxis("y", 
+  function() return love.keyboard.isDown("s") end,
+  function() return love.keyboard.isDown("z", "w") end)
+Controller.KEYBOARD_LEFT = KEYBOARD_LEFT
+
+local KEYBOARD_RIGHT = Controller()
+KEYBOARD_RIGHT:addAxis("x", 
+  function() return love.keyboard.isDown("right") end,
+  function() return love.keyboard.isDown("left") end)
+KEYBOARD_RIGHT:addAxis("y", 
+  function() return love.keyboard.isDown("down") end,
+  function() return love.keyboard.isDown("up") end)
+Controller.KEYBOARD_RIGHT = KEYBOARD_RIGHT
 
 --[[------------------------------------------------------------
 EXPORT
