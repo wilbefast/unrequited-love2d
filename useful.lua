@@ -42,6 +42,20 @@ function useful.map(objects, ...)
   end -- while oi <= #objects
 end -- useful.map(objects, functions)
 
+function useful.purge(objects)
+  local i = 1
+  while i <= #objects do
+    local o = objects[i]
+    if o.purge then
+      if o.onPurge then
+        o:onPurge()
+      end
+      table.remove(objects, i)
+    else
+      i = i + 1
+    end
+  end
+end
 
 -- Because Love2D implementation of args is different?
 function useful.packArgs(a, ...)
