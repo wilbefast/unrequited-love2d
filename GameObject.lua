@@ -326,7 +326,7 @@ function GameObject.getMost(evaluator)
       best, best_value = object, value
     end
   end
-  return best
+  return best, best_value
 end
 
 function GameObject.getMostOfType(typename, evaluator)
@@ -340,7 +340,7 @@ function GameObject.getMostOfType(typename, evaluator)
       end
     end
   end
-  return best
+  return best, best_value
 end
 
 function GameObject.getLeast(evaluator)
@@ -351,7 +351,7 @@ function GameObject.getLeast(evaluator)
       best, best_value = object, value
     end
   end
-  return best
+  return best, best_value
 end
 
 function GameObject.getLeastOfType(typename, evaluator)
@@ -365,33 +365,37 @@ function GameObject.getLeastOfType(typename, evaluator)
       end
     end
   end
-  return best
+  return best, best_value
 end
 
 --[[--
 find nearest/furthest
 --]]--
 
-function GameObject.getNearest(x, y)
+function GameObject.getNearest(x, y, suchThat)
   local nearest, nearest_distance2 = nil, math.huge
   for i, object in ipairs(__INSTANCES) do
-    local distance2 = vector.dist2(x, y, object.x, object.y)
-    if distance2 < nearest_distance2 then
-      nearest, nearest_distance2 = object, distance2
+    if (not suchThat) or suchThat(object) then
+      local distance2 = vector.dist2(x, y, object.x, object.y)
+      if distance2 < nearest_distance2 then
+        nearest, nearest_distance2 = object, distance2
+      end
     end
   end
-  return nearest
+  return nearest, nearest_distance2
 end
 
-function GameObject.getFurthest(x, y)
+function GameObject.getFurthest(x, y, suchThat)
   local furthest, furthest_distance2 = nil, math.huge
   for i, object in ipairs(__INSTANCES) do
-    local distance2 = vector.dist2(x, y, object.x, object.y)
-    if distance2 > nearest_distance2 then
-      furthest, furthest_distance2 = object, distance2
+    if (not suchThat) or suchThat(object) then
+      local distance2 = vector.dist2(x, y, object.x, object.y)
+      if distance2 > nearest_distance2 then
+        furthest, furthest_distance2 = object, distance2
+      end
     end
   end
-  return furthest
+  return furthest, furthest_distance2
 end
 
 function GameObject.getNearestOfType(typename, x, y, suchThat)
@@ -407,7 +411,7 @@ function GameObject.getNearestOfType(typename, x, y, suchThat)
       end
     end
   end
-  return nearest
+  return nearest, nearest_distance2
 end
 
 function GameObject.getFurthestOfType(typename, x, y, suchThat)
@@ -423,7 +427,7 @@ function GameObject.getFurthestOfType(typename, x, y, suchThat)
       end
     end
   end
-  return furthest
+  return furthest, furthest_distance2
 end
 
 --[[------------------------------------------------------------
