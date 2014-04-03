@@ -54,6 +54,7 @@ end
 function Controller:addButton(name, fpressed)
   local button = { 
     name = name,
+    name_pressed = name .. "_pressed",
     __fpressed = fpressed, 
     __pressed_prev = false, 
     pressed = false, 
@@ -88,6 +89,7 @@ function Controller:update(dt)
 
     -- shortcut access
     self[button.name] = (button.trigger == 1)
+    self[button.name_pressed] = button.pressed
   end
 end
 
