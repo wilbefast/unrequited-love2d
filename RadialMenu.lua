@@ -74,6 +74,7 @@ end
 function RadialMenu:close(amount)
 	self.__open = math.max(self.__open - amount, 0)
 	self.x, self.y = 0, 0
+	self.__selection = nil
 end
 
 --[[------------------------------------------------------------
@@ -85,6 +86,8 @@ function RadialMenu:move(x, y, speed)
 	if self:isClosed() then
 		return
 	end
+	-- reset cached selected
+	self.__selection = nil
 	-- move the selection
 	local move = ((((x ~= 0) or (y ~= 0)) and 7) or 1)*speed
 	self.x = useful.lerp(self.x, x, move)
@@ -96,16 +99,21 @@ function RadialMenu:getSelection(minimum_value)
 	if (not self:isOpened()) then
 		return
 	end
+	-- do we have a cached result?
+	if self.__selection then
+		return self.__selection
+	end
 	-- get the best candidate
-	local best_option, best_value = nil, (minimum_value or 0.1)
+	local best_option, best_value = nil, (minimum_value or 0.5)
 	for i, option in ipairs(self.options) do
-		local value = Vector.dot(self.x, self.y, option.x, option.y)
+		local value = Vector.dot(self.x, self.y, option.x/self.radius, option.y/self.radius)
   	if value > best_value then
   		best_option, best_value = option, value
   	end
   end
-  -- return an index
-  return best_option
+  -- return an best
+  self.__selection = best_option
+  return self.__selection
 end
 
 --[[------------------------------------------------------------
@@ -122,13 +130,8 @@ function RadialMenu:draw(x, y)
 	-- draw each options
 	for i, option in ipairs(self.options) do
 		local offset_x, offset_y = option.x*self.__open, option.y*self.__open
-		-- draw selected ?
-		if option == selection then
-			scaling:circle("fill", x + offset_x, y + offset_y, 30)
-		-- draw unselected ?
-		else
-			scaling:circle("line", x + offset_x, y + offset_y, 30)
-		end
+		-- draw the option
+		option.draw(x + offset_x, y + offset_y, (option == selection))
 	end
 end
 
