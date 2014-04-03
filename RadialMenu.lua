@@ -94,6 +94,17 @@ function RadialMenu:move(x, y, speed)
 	self.y = useful.lerp(self.y, y, move)
 end
 
+function RadialMenu:setPosition(x, y)
+	-- don't move if closed
+	if self:isClosed() then
+		return
+	end
+	-- reset cached selected
+	self.__selection = nil
+	-- move selection to new postion
+	self.x, self.y = x, y
+end
+
 function RadialMenu:getSelection(minimum_value)
 	-- return nothing until open
 	if (not self:isOpened()) then
