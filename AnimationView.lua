@@ -19,6 +19,8 @@ IMPORTS
 
 local Class = require("hump/class")
 
+local useful = require("unrequited/useful")
+
 --[[------------------------------------------------------------
 ANIMATIONVIEW CLASS
 --]]------------------------------------------------------------
