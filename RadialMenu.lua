@@ -35,6 +35,7 @@ local RadialMenu = Class
 		self.__open = 0
 		self.radius = (radius or 48)
 		self.options = {}
+		self.x, self.y = 0, 0
 	end
 }
 
