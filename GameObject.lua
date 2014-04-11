@@ -575,6 +575,21 @@ function  GameObject:snapInsideBoundary(bx, by, bw, bh)
   end
 end
 
+--[[------------------------------------------------------------
+Physics
+--]]
+
+function GameObject:accelerateTowards(x, y, speed)
+  speed = (speed or 1)
+  local ddx, ddy = vector.normalize(x - self.x, y - self.y)
+  self.dx, self.dy = self.dx + ddx*speed, self.dy + ddy*speed
+end
+
+function GameObject:springTowards(x, y, springConstant)
+  springConstant = (springConstant or 1)
+  local ddx, ddy = x - self.x, y - self.y
+  self.dx, self.dy = self.dx + ddx*springConstant, self.dy + ddy*springConstant
+end
 
 --[[------------------------------------------------------------
 Game loop
