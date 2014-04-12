@@ -585,11 +585,24 @@ function GameObject:accelerateTowards(x, y, speed)
   self.dx, self.dy = self.dx + ddx*speed, self.dy + ddy*speed
 end
 
+function GameObject:accelerateTowardsObject(o, speed)
+  speed = (speed or 1)
+  local ddx, ddy = vector.normalize(o.x - self.x, o.y - self.y)
+  self.dx, self.dy = self.dx + ddx*speed, self.dy + ddy*speed
+end
+
 function GameObject:springTowards(x, y, springConstant)
   springConstant = (springConstant or 1)
   local ddx, ddy = x - self.x, y - self.y
   self.dx, self.dy = self.dx + ddx*springConstant, self.dy + ddy*springConstant
 end
+
+function GameObject:springTowardsObject(o, springConstant)
+  springConstant = (springConstant or 1)
+  local ddx, ddy = o.x - self.x, o.y - self.y
+  self.dx, self.dy = self.dx + ddx*springConstant, self.dy + ddy*springConstant
+end
+
 
 --[[------------------------------------------------------------
 Game loop
