@@ -73,7 +73,7 @@ end
 
 --[[------------------------------------------------------------
 Mutators
---]]
+--]]--
 
 function AnimationView:seekRandom()
   self.frame = math.random(self.anim.n_frames)
@@ -91,6 +91,13 @@ function AnimationView:setAnimation(anim)
   end
 end
 
+--[[------------------------------------------------------------
+Accessors
+--]]--
+
+function AnimationView:getAnimationProgress()
+  return (self.frame-1) / self.anim.n_frames
+end
 
 --[[------------------------------------------------------------
 EXPORT
