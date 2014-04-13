@@ -30,13 +30,13 @@ Initialisation
 
 local Animation = Class
 {
-  init = function(self, img, w, h, n_frames, offx, offy, flip_x, flip_y)
+  init = function(self, img, w, h, n_frames, offx, offy, scalex, scaley)
   
     -- remember frame number to prevent array out-of-bounds
     self.n_frames = (n_frames or 1)
     
-    -- flipping
-    self.flip_x, self.flip_y = (flip_x or false), (flip_y or false)
+    -- mirroring
+    self.scalex, self.scaley = (scalex or 1), (scaley or 1)
   
     -- store reference to image
     self.img = img
@@ -59,19 +59,17 @@ local Animation = Class
 Game loop
 --]]
   
-function Animation:draw(x, y, subimage, flip_x, flip_y, ox, oy, angle)
+function Animation:draw(x, y, subimage, scalex, scaley, ox, oy, angle)
   if subimage then
     subimage = math.min(self.n_frames, math.floor(subimage))
   else
     subimage = 1
   end  
   
-  flip_x = (flip_x or self.flip_x)
-  flip_y = (flip_y or self.flip_y)
+  scalex = (scalex or self.scalex)
+  scaley = (scaley or self.scaley)
   love.graphics.draw(self.img, self.quads[subimage], x, y, angle or self.angle or 0,
-      useful.tri(flip_x, -1, 1), 
-      useful.tri(flip_y, -1, 1),
-      ox, oy)
+      scalex, scaley, ox, oy)
 end
 
 

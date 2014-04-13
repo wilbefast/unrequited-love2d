@@ -31,7 +31,7 @@ Initialisation
 
 local AnimationView = Class
 {
-  init = function(self, anim, speed, frame, offx, offy)
+  init = function(self, anim, speed, frame, offx, offy, sizex, sizey)
     self.anim = anim
     self.speed = (speed or 0.0)
     
@@ -39,6 +39,10 @@ local AnimationView = Class
                               1, self.anim.n_frames)
     self.offx = (offx or 0)
     self.offy = (offy or 0)
+    self.sizex = (sizex or 1)
+    self.sizey = (sizey or 1)
+    self.flipx = 1
+    self.flipy = 1
   end,
 }
   
@@ -47,9 +51,11 @@ local AnimationView = Class
 Game loop
 --]]
     
-function AnimationView:draw(object, x, y, angle)
-  self.anim:draw(x or object.x, y or object.y, self.frame, 
-                  self.flip_x, self.flip_y, self.offx, self.offy, angle or self.angle)
+function AnimationView:draw(object, x, y, angle, sizex, sizey)
+  x, y = (x or object.x), (y or object.y)
+  sizex, sizey = (sizex or self.sizex)*self.flipx, (sizey or self.sizex)*self.flipy
+  angle = (angle or self.angle)
+  self.anim:draw(x, y, self.frame, sizex, sizey, self.offx, self.offy, angle)
 end
 
 function AnimationView:update(dt)
