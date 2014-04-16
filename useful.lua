@@ -133,6 +133,10 @@ function useful.sign(x)
   end
 end
 
+function useful.nonZeroSign(x)
+  return (((x < 0) and -1) or 1)
+end
+
 -- square a number
 function useful.sqr(x)
   return x*x
@@ -235,6 +239,10 @@ end
 
 function useful.bindWhite(a)
   love.graphics.setColor(255, 255, 255, a or 255)
+end
+
+function useful.bindBlack(a)
+  love.graphics.setColor(0, 0, 0, a or 255)
 end
 
 function useful.recordGIF(key)
