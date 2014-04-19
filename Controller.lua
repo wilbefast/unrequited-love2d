@@ -1,8 +1,8 @@
 --[[
 "Unrequited", a Löve 2D extension library
-(C) Copyleft 2014 William Dyce
+(C) Copyright 2013 William Dyce
 
-All lefts reserved. This program and the accompanying materials
+All rights reserved. This program and the accompanying materials
 are made available under the terms of the GNU Lesser General Public License
 (LGPL) version 2.1 which accompanies this distribution, and is available at
 http://www.gnu.org/licenses/lgpl-2.1.html
