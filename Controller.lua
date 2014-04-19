@@ -1,8 +1,8 @@
 --[[
 "Unrequited", a Löve 2D extension library
-(C) Copyright 2014 William Dyce
+(C) Copyleft 2014 William Dyce
 
-All rights reserved. This program and the accompanying materials
+All lefts reserved. This program and the accompanying materials
 are made available under the terms of the GNU Lesser General Public License
 (LGPL) version 2.1 which accompanies this distribution, and is available at
 http://www.gnu.org/licenses/lgpl-2.1.html
@@ -69,7 +69,7 @@ function Controller:update(dt)
     if axis.__fnegative then
       axis.position = ((axis.__fpositive() and 1) or 0) - ((axis.__fnegative() and 1) or 0)
     else
-      axis.position = __fpositive()
+      axis.position = axis.__fpositive()
     end
      
     -- shortcut access
@@ -94,34 +94,143 @@ function Controller:update(dt)
 end
 
 --[[------------------------------------------------------------
+Input events
+--]]--
+
+function Controller.keypressed(key, uni)
+  -- override me!
+end
+
+function Controller.keyreleased(key, uni)
+  -- override me!
+end
+
+function Controller.mousepressed(x, y, button)
+  -- override me!
+end
+
+function Controller.mousereleased(x, y, button)
+  -- override me!
+end
+
+function Controller.joystickpressed(joystick, button)
+  -- override me!
+end
+
+function Controller.joystickreleased(joystick, button)
+  -- override me!
+end
+
+function Controller.gamepadpressed(joystick, button)
+  -- override me!
+end
+
+function Controller.gamepadreleased(joystick, button)
+  -- override me!
+end
+
+--[[------------------------------------------------------------
+Generic joystick controller
+--]]--
+
+local __Joystick = Class
+{
+  init = function(self, joystick)
+    Controller.init(self)
+
+    -- add each axis
+    for i = 1, joystick:getAxisCount() do
+      self:addAxis("axis" .. i, function() return joystick:getAxis(i) end)
+    end
+
+    -- add each hat
+    for i = 1, joystick:getHatCount() do
+      self:addAxis("hat" .. tostring(i), function() return joystick:getHat(i) end)
+    end
+
+    -- add each button
+    for i = 1, joystick:getButtonCount() do
+      self:addButton("button" .. tostring(i), function() return joystick:isDown(i) end)
+    end
+  end,
+}
+__Joystick:include(Controller)
+Controller.Joystick = __Joystick
+
+
+--[[------------------------------------------------------------
+Gamepad controller
+--]]--
+
+local __Gamepad = Class
+{
+  axis_names =
+  {
+    "leftx", "lefty", "leftx", "lefty", "triggerleft", "triggerleft"
+  },
+
+  button_names =
+  {
+    "a", "b", "x", "y", "back", "guide", "start", "leftstick", "leftstick", 
+    "leftshoulder", "leftshoulder", "dpup", "dpdown", "dpleft", "dpleft"
+  },
+
+  gamepad = true,
+
+  init = function(self, joystick)
+    Controller.init(self)
+
+    -- save this mapping
+    Controller.Gamepad[joystick] = self
+
+    -- add each axis
+    for _, name in ipairs(self.axis_names) do
+      self:addAxis(name, function() return joystick:getGamepadAxis(name) end)
+    end
+
+    -- add each button
+    for _, name in ipairs(self.button_names) do
+      self:addButton(name, function() return joystick:isGamepadDown(name) end)
+    end
+  end,
+}
+__Gamepad:include(Controller)
+Controller.Gamepad = __Gamepad
+
+
+
+--[[------------------------------------------------------------
 Default keyboard controls
 --]]--
 
 local KEYBOARD = Controller()
-KEYBOARD:addAxis("x", 
+KEYBOARD:addAxis("leftx", 
   function() return love.keyboard.isDown("right", "d") end,
   function() return love.keyboard.isDown("left", "q", "a") end)
-KEYBOARD:addAxis("y", 
+KEYBOARD:addAxis("lefty", 
   function() return love.keyboard.isDown("down", "s") end,
   function() return love.keyboard.isDown("up", "z", "w") end)
+KEYBOARD.keyboard = true
 Controller.KEYBOARD = KEYBOARD
 
 local KEYBOARD_LEFT = Controller()
-KEYBOARD_LEFT:addAxis("x", 
+KEYBOARD_LEFT:addAxis("leftx", 
   function() return love.keyboard.isDown("d") end,
   function() return love.keyboard.isDown("q", "a") end)
-KEYBOARD_LEFT:addAxis("y", 
+KEYBOARD_LEFT:addAxis("lefty", 
   function() return love.keyboard.isDown("s") end,
   function() return love.keyboard.isDown("z", "w") end)
+KEYBOARD_LEFT.keyboard = true
 Controller.KEYBOARD_LEFT = KEYBOARD_LEFT
 
 local KEYBOARD_RIGHT = Controller()
-KEYBOARD_RIGHT:addAxis("x", 
+KEYBOARD_RIGHT:addAxis("leftx", 
   function() return love.keyboard.isDown("right") end,
   function() return love.keyboard.isDown("left") end)
-KEYBOARD_RIGHT:addAxis("y", 
+KEYBOARD_RIGHT:addAxis("lefty", 
   function() return love.keyboard.isDown("down") end,
   function() return love.keyboard.isDown("up") end)
+KEYBOARD_RIGHT.keyboard = true
 Controller.KEYBOARD_RIGHT = KEYBOARD_RIGHT
 
 --[[------------------------------------------------------------
