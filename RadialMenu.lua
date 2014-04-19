@@ -49,7 +49,7 @@ function RadialMenu:addOption(option)
 	local angle = math.pi*2/#self.options
 	-- change positions of previous options
 	for i, option in ipairs(self.options) do
-		local option_angle = angle*i
+		local option_angle = angle*(i - 0.75)
 		option.x = math.cos(option_angle)*self.radius
 		option.y = math.sin(option_angle)*self.radius
 	end
