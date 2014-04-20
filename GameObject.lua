@@ -170,11 +170,13 @@ function GameObject.mapToAll(f)
   end
 end
 
-function GameObject.mapToType(typename, f)
+function GameObject.mapToType(typename, f, suchThat)
   local t = __TYPE[typename]
   for i, object in ipairs(__INSTANCES) do
     if (object.type == t) then
-      f(object, i)
+      if (not suchThat) or suchThat(object) then
+        f(object, i)
+      end
     end
   end
 end
