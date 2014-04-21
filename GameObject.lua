@@ -242,7 +242,7 @@ function GameObject.countOfTypeSuchThat(typename, predicate)
   local t = __TYPE[typename]
   local count = 0
   for i, object in ipairs(__INSTANCES) do
-    if (object.type == t) and predicate(object) then
+    if (object.type == t) and ((not predicate) or predicate(object)) then
       count = count + 1 
     end
   end
