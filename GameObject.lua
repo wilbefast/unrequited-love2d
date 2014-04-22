@@ -643,6 +643,12 @@ function GameObject:update(dt)
   if (self.dy ~= 0) and fisix.FRICTION_Y and (fisix.FRICTION_Y ~= 0) then
     self.dy = self.dy / (math.pow(fisix.FRICTION_Y, dt))
   end
+  if fisix.FRICTION and ((self.dx ~= 0) or (self.dy ~= 0)) then
+
+    local normed_dx, normed_dy, original_speed = vector.normalize(self.dx, self.dy)
+    local new_speed = original_speed / (math.pow(fisix.FRICTION, dt)) 
+    self.dx, self.dy = normed_dx*new_speed, normed_dy*new_speed
+  end
   
   -- terminal velocity
   local abs_dx, abs_dy = math.abs(self.dx), math.abs(self.dy)
