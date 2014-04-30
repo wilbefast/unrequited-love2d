@@ -115,8 +115,26 @@ end
 
 function GameObject.updateAll(dt, ysort, view)
     -- add new objects
-  for _, object in pairs(__NEW_INSTANCES) do
-    table.insert(__INSTANCES, object)
+  for _, new_object in pairs(__NEW_INSTANCES) do
+    if ysort then
+      local oi = 1
+      local inserted = false
+      while (not inserted) and (oi <= (#__INSTANCES)) do
+        local object = __INSTANCES[oi]
+        if (object.y > new_object.y) then
+          -- add to the correct position in the list
+          table.insert(__INSTANCES, oi, new_object)
+          inserted = true
+        end
+        oi = oi + 1
+      end
+      if not inserted then
+        -- default (add to the end)
+        table.insert(__INSTANCES, new_object)
+      end
+    else
+      table.insert(__INSTANCES, new_object)
+    end
   end
   __NEW_INSTANCES = { }
 
