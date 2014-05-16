@@ -61,11 +61,21 @@ end
 function AnimationView:update(dt)
   self.frame = self.frame + self.speed*dt
   if self.frame >= self.anim.n_frames + 1 then
-    self.frame = self.frame - self.anim.n_frames
+    if self.autoReverse then
+      self.speed = -self.speed
+      self.frame = self.anim.n_frames + 1
+    else
+      self.frame = self.frame - self.anim.n_frames
+    end
     return true -- animation end
   end
   if self.frame < 1 then
-    self.frame = self.frame + self.anim.n_frames
+    if self.autoReverse then
+      self.speed = -self.speed
+      self.frame = 1
+    else
+      self.frame = self.frame + self.anim.n_frames
+    end
     return true -- animation end
   end
   return false -- animation continues
