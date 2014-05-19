@@ -222,6 +222,17 @@ function GameObject.mapToTypePair(typename1, typename2, f)
   end
 end
 
+function GameObject.mapWithinRadius(x, y, radius, f, suchThat)
+  local radius2 = radius*radius
+  for i, object in ipairs(__INSTANCES) do
+    if (not suchThat) or suchThat(object) then
+      local distance2 = vector.dist2(x, y, object.x, object.y)
+      if distance2 <= radius2 then
+        f(object, distance2)
+      end
+    end
+  end
+end
 
 function GameObject.mapToTypeWithinRadius(typename, x, y, radius, f, suchThat)
   local t = __TYPE[typename]
