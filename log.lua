@@ -19,6 +19,9 @@ DEBUG CONSOLE
 
 local log = { "", "", "", "", "", "", "", "", "", "" }
 
+log.cycle = { " |", " /", " --", " \\", " |", " /", " --", " \\"}
+log.cycle_i = 1
+
 log.font = love.graphics.newFont(14)
 
 function log:write(message)
@@ -32,17 +35,24 @@ function log:write(message)
 		self[i] = self[i-1]
 	end
 	-- add to beginning
-	self[1] = message
+	self[1] = message .. self.cycle[self.cycle_i]
 end
 
 function log:draw()
+	-- draw
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.setLineWidth(1)
-		love.graphics.rectangle("line", 16, 16, 256, 32*#self + 16)
-		love.graphics.setFont(self.font)
-		for i = 1, #self do
-			love.graphics.printf(self[i], 32, 32*i, 256)
-		end
+	love.graphics.rectangle("line", 16, 16, 256, 32*#self + 16)
+	love.graphics.setFont(self.font)
+	for i = 1, #self do
+		love.graphics.printf(self[i], 32, 32*i, 256)
+	end
+
+	-- cycle
+	self.cycle_i = self.cycle_i + 1
+	if self.cycle_i > #self.cycle then 
+		self.cycle_i = 1
+	end
 end
 
 return log
