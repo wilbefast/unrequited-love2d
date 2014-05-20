@@ -253,4 +253,26 @@ function useful.recordGIF(key)
   end
 end
 
+useful.canvasStack = {}
+
+function useful.pushCanvas(newCanvas)
+  table.insert(useful.canvasStack, love.graphics.getCanvas())
+  love.graphics.push()
+  love.graphics.origin()
+  love.graphics.setCanvas(newCanvas)
+end
+
+function useful.popCanvas()
+  local n = #useful.canvasStack
+  if n > 0 then
+    local oldCanvas = useful.canvasStack[n]
+    table.remove(useful.canvasStack, n)
+    love.graphics.pop()
+    love.graphics.setCanvas(oldCanvas)
+  else
+    love.graphics.pop()
+    love.graphics.setCanvas()
+  end
+end
+
 return useful
