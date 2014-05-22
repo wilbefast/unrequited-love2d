@@ -109,7 +109,12 @@ function GameObject.purgeAll()
 		function(object)
 			object.purge = true
 		end)
+  useful.map(__NEW_INSTANCES, 
+    function(object)
+      object.purge = true
+    end)
   __INSTANCES = {}
+  __NEW_INSTANCES = {}
   __NEXT_ID = 1
 end
 
@@ -182,9 +187,11 @@ function GameObject.drawAll(view)
   end)
 end
 
-function GameObject.mapToAll(f)
+function GameObject.mapToAll(f, suchThat)
   for i, object in ipairs(__INSTANCES) do
-    f(object, i)
+    if (not suchThat) or suchThat(object) then
+      f(object, i)
+    end
   end
 end
 
@@ -256,6 +263,8 @@ Query
 --[[--
 count
 --]]--
+
+
 
 function GameObject.countSuchThat(predicate)
   local count = 0
