@@ -131,7 +131,7 @@ end
 Draw
 --]]--
 
-function RadialMenu:draw(x, y)
+function RadialMenu:draw(x, y, context)
 	-- don't draw if closed
 	if self:isClosed() then
 		return
@@ -142,7 +142,7 @@ function RadialMenu:draw(x, y)
 	for i, option in ipairs(self.options) do
 		local offset_x, offset_y = option.x*self.__open, option.y*self.__open
 		-- draw the option
-		option.draw(x + offset_x, y + offset_y, (option == selection), self.__open)
+		option.draw(x + offset_x, y + offset_y, (option == selection), self.__open, context)
 	end
 end
 
