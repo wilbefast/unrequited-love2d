@@ -625,9 +625,12 @@ function  GameObject:snapInsideBoundary(bx, by, bw, bh)
   if self.r then
     self.x = math.max(bx + self.r, math.min(self.x, bx + bw - self.r))
     self.y = math.max(by + self.r, math.min(self.y, by + bh - self.r))
-  else
+  elseif self.w and self.h then
     self.x = math.max(bx + self.w*0.5, math.min(self.x, bx + bw - self.w*0.5))
     self.y = math.max(by + self.h*0.5, math.min(self.y, by + bh - self.h*0.5))
+  else
+    self.x = math.max(bx, math.min(bx + bw))
+    self.y = math.max(by, math.min(by + bh))
   end
 end
 
