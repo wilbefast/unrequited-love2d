@@ -275,4 +275,8 @@ function useful.popCanvas()
   end
 end
 
+function useful.getTimestamp()
+  return os.date("%x_%X"):gsub("[/:]", "-")
+end
+
 return useful
