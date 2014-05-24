@@ -181,7 +181,7 @@ end
 
 function useful.printf(text, x, y, angle, maxwidth)
   
-  maxwidth = (maxwidth or 0)/SCALE_MIN
+  maxwidth = (maxwidth or 0)/(SCALE_MIN or 1)
 
   love.graphics.push()
     love.graphics.scale(SCALE_MIN, SCALE_MIN)
