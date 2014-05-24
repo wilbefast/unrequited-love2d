@@ -42,16 +42,21 @@ local RadialMenu = Class
 Add options
 --]]--
 
-function RadialMenu:addOption(option)
+function RadialMenu:addOption(option, angle)
 	-- add the new option
 	table.insert(self.options, option)
-	-- calculate angle between options
-	local angle = math.pi*2/#self.options
-	-- change positions of previous options
-	for i, option in ipairs(self.options) do
-		local option_angle = angle*(i - 0.75)
-		option.x = math.cos(option_angle)*self.radius
-		option.y = math.sin(option_angle)*self.radius
+	if not angle then
+		-- calculate angle between options
+		angle = math.pi*2/#self.options
+		-- change positions of previous options
+		for i, o in ipairs(self.options) do
+			local o_angle = angle*(i - 0.75)
+			o.x = math.cos(o_angle)*self.radius
+			o.y = math.sin(o_angle)*self.radius
+		end
+	else
+		option.x = math.cos(angle)*self.radius
+		option.y = math.sin(angle)*self.radius
 	end
 end
 
