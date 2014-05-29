@@ -118,10 +118,12 @@ function GameObject.purgeAll()
   __NEXT_ID = 1
 end
 
-function GameObject.updateAll(dt, ysort, view)
-    -- add new objects
+function GameObject.updateAll(dt, view)
+  -- oblique viewing angle ?
+  local oblique = (view and view.oblique)
+  -- add new objects
   for _, new_object in pairs(__NEW_INSTANCES) do
-    if ysort then
+    if oblique then
       local oi = 1
       local inserted = false
       while (not inserted) and (oi <= (#__INSTANCES)) do
@@ -159,7 +161,7 @@ function GameObject.updateAll(dt, ysort, view)
           end) 
   end)
 
-	if ysort then
+	if oblique then
   	local oi = 1
   	while oi <= (#__INSTANCES) do
     	local obj = __INSTANCES[oi]
@@ -176,13 +178,15 @@ function GameObject.updateAll(dt, ysort, view)
 end
 
 function GameObject.drawAll(view)
+  -- oblique viewing angle ?
+  local oblique = (view and view.oblique) or 1
 	-- for each object
   useful.map(__INSTANCES,
     function(object)
       -- if the object is in view...
-      if (not view) or object:isColliding(view) then
+      if (not view) or (not (view.x and view.y and view.w and view.h)) or object:isColliding(view) then
         -- ...draw the object
-        object:draw(view)
+        object:draw(object.x, object.y*oblique, view)
       end
   end)
 end
