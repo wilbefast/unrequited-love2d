@@ -13,6 +13,12 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 Lesser General Public License for more details.
 --]]
 
+--[[------------------------------------------------------------
+IMPORTS
+--]]------------------------------------------------------------
+
+local useful = require("unrequited/useful")
+
 --[[---------------------------------------------------------------------------
 DEBUG CONSOLE
 --]]---------------------------------------------------------------------------
@@ -24,28 +30,45 @@ log.cycle_i = 1
 
 log.font = love.graphics.newFont(14)
 
-function log:write(message)
-
-	if type(message) ~= "string" then
-		message = tostring(message)
+function log:write(...)
+	-- build the new log
+	local args = useful.packArgs(...)
+	local message = nil
+	for _, a in ipairs(args) do
+		-- convert to string
+		if type(a) ~= "string" then
+			a = tostring(a)
+		end
+		message = (message and (message .. ", " .. a)) or a
 	end
 
-	-- shift right
-	for i = #self, 2, -1 do
-		self[i] = self[i-1]
+	if message then
+		-- shift previous logs towards the end
+		for i = #self, 2, -1 do
+			self[i] = self[i-1]
+		end
+		-- add the new log to the beginning
+
+		self[1] = message .. self.cycle[self.cycle_i]
+	else
+		print(debug.traceback())
 	end
-	-- add to beginning
-	self[1] = message .. self.cycle[self.cycle_i]
 end
 
-function log:draw()
-	-- draw
+function log:draw(x, y, w)
+	x, y, w = x or 16, y or 16, w or 256
+	local h = 16 + 32*#self
+	-- draw background
+	love.graphics.setColor(0, 0, 0, 128)
+	love.graphics.rectangle("fill", x, y, w, h)
+	-- draw outline
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.setLineWidth(1)
-	love.graphics.rectangle("line", 16, 16, 256, 32*#self + 16)
+	love.graphics.rectangle("line", x, y, w, h)
+	-- draw text
 	love.graphics.setFont(self.font)
 	for i = 1, #self do
-		love.graphics.printf(self[i], 32, 32*i, 256)
+		love.graphics.printf(self[i], x + 16, y + 16 + 32*(i-1), w)
 	end
 
 	-- cycle
