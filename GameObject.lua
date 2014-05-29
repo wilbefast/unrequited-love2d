@@ -184,7 +184,7 @@ function GameObject.drawAll(view)
   useful.map(__INSTANCES,
     function(object)
       -- if the object is in view...
-      if (not view) or (not (view.x and view.y and view.w and view.h)) or object:isColliding(view) then
+      if not object.purge and ((not view) or (not (view.x and view.y and view.w and view.h)) or object:isColliding(view)) then
         -- ...draw the object
         object:draw(object.x, object.y*oblique, view)
       end
@@ -193,7 +193,7 @@ end
 
 function GameObject.mapToAll(f, suchThat)
   for i, object in ipairs(__INSTANCES) do
-    if (not suchThat) or suchThat(object) then
+    if not object.purge and ((not suchThat) or suchThat(object)) then
       f(object, i)
     end
   end
@@ -202,7 +202,7 @@ end
 function GameObject.mapToType(typename, f, suchThat)
   local t = __TYPE[typename]
   for i, object in ipairs(__INSTANCES) do
-    if (object.type == t) then
+    if not object.purge and (object.type == t) then
       if (not suchThat) or suchThat(object) then
         f(object, i)
       end
@@ -213,7 +213,10 @@ end
 function GameObject.mapToPair(f)
   for i = 1, #__INSTANCES do
     for j = i+1, (#__INSTANCES)-1 do
-      f(i, j)
+      local object1, object2 = __INSTANCES[i], __INSTANCES[j]
+      if( not object1.purge) and (not object2.purge) then
+        f(i, j)
+      end
     end
   end
 end
@@ -222,10 +225,10 @@ function GameObject.mapToTypePair(typename1, typename2, f)
   local t1, t2 = __TYPE[typename1], __TYPE[typename2]
   for i = 1, #__INSTANCES do
     local object1 = __INSTANCES[i]
-    if object1.type == t1 then
+    if not object1.purge and (object1.type == t1) then
       for j = i+1, (#__INSTANCES) do
         local object2 = __INSTANCES[j]
-        if object2.type == t2 then
+        if not object2.purge and (object2.type == t2) then
           f(object1, object2)
         end
       end
@@ -236,7 +239,7 @@ end
 function GameObject.mapWithinRadius(x, y, radius, f, suchThat)
   local radius2 = radius*radius
   for i, object in ipairs(__INSTANCES) do
-    if (not suchThat) or suchThat(object) then
+    if not object.purge and ((not suchThat) or suchThat(object)) then
       local distance2 = vector.dist2(x, y, object.x, object.y)
       if distance2 <= radius2 then
         f(object, distance2)
@@ -249,7 +252,7 @@ function GameObject.mapToTypeWithinRadius(typename, x, y, radius, f, suchThat)
   local t = __TYPE[typename]
   local radius2 = radius*radius
   for i, object in ipairs(__INSTANCES) do
-    if object.type == t then
+    if  not object.purge and (object.type == t) then
       if (not suchThat) or suchThat(object) then
         local distance2 = vector.dist2(x, y, object.x, object.y)
         if distance2 <= radius2 then
@@ -269,11 +272,10 @@ count
 --]]--
 
 
-
 function GameObject.countSuchThat(predicate)
   local count = 0
   for i, object in ipairs(__INSTANCES) do
-    if predicate(object) then
+    if  not object.purge and predicate(object) then
       count = count + 1 
     end
   end
@@ -284,7 +286,7 @@ function GameObject.countOfTypeSuchThat(typename, predicate)
   local t = __TYPE[typename]
   local count = 0
   for i, object in ipairs(__INSTANCES) do
-    if (object.type == t) and ((not predicate) or predicate(object)) then
+    if not object.purge and (object.type == t) and ((not predicate) or predicate(object)) then
       count = count + 1 
     end
   end
@@ -297,7 +299,7 @@ check predicate
 
 function GameObject.trueForAny(predicate)
   for i, object in ipairs(__INSTANCES) do
-    if not predicate(object) then
+    if not object.purge and not predicate(object) then
       return true
     end
   end
@@ -307,7 +309,7 @@ end
 function GameObject.trueForAnyOfType(typename, predicate)
   local t = __TYPE[typename]
   for i, object in ipairs(__INSTANCES) do
-    if (object.type == t) and predicate(object) then
+    if  not object.purge and (object.type == t) and predicate(object) then
       return true
     end
   end
@@ -316,7 +318,7 @@ end
 
 function GameObject.trueForAll(predicate)
 	for i, object in ipairs(__INSTANCES) do
-    if not predicate(object) then
+    if not object.purge and not predicate(object) then
       return false
     end
   end
@@ -326,7 +328,7 @@ end
 function GameObject.trueForAllOfType(typename, predicate)
   local t = __TYPE[typename]
   for i, object in ipairs(__INSTANCES) do
-    if (object.type == t) and (not predicate(object)) then
+    if not object.purge and (object.type == t) and (not predicate(object)) then
       return false
     end
   end
@@ -345,7 +347,7 @@ function GameObject.getObjectOfType(typename, index)
   local count = 0
   local t = __TYPE[typename]
   for i, object in ipairs(__INSTANCES) do
-    if (object.type == t) then
+    if  not object.purge and (object.type == t) then
       count = count + 1
       if count == index then
         return object
@@ -357,7 +359,7 @@ end
 
 function GameObject.getFirstSuchThat(predicate)
   for i, object in ipairs(__INSTANCES) do
-    if predicate(object) then
+    if not object.purge and predicate(object) then
       return object
     end
   end
@@ -367,7 +369,7 @@ end
 function GameObject.getFirstOfTypeSuchThat(typename, predicate)
   local t = __TYPE[typename]
   for i, object in ipairs(__INSTANCES) do
-    if (object.type == t) and predicate(object) then
+    if not object.purge and (object.type == t) and predicate(object) then
       return object
     end
   end
@@ -382,8 +384,10 @@ function GameObject.getMost(evaluator)
   local best, best_value = nil, -math.huge
   for i, object in ipairs(__INSTANCES) do
     local value = evaluator(object)
-    if value > best_value then
-      best, best_value = object, value
+    if not object.purge then
+      if value > best_value then
+        best, best_value = object, value
+      end
     end
   end
   return best, best_value
@@ -393,7 +397,7 @@ function GameObject.getMostOfType(typename, evaluator)
   local t = __TYPE[typename]
   local best, best_value = nil, -math.huge
   for i, object in ipairs(__INSTANCES) do
-    if object.type == t then
+    if not object.purge and (object.type == t) then
       local value = evaluator(object)
       if value > best_value then
         best, best_value = object, value
@@ -406,9 +410,11 @@ end
 function GameObject.getLeast(evaluator)
   local best, best_value = nil, math.huge
   for i, object in ipairs(__INSTANCES) do
-    local value = evaluator(object)
-    if value < best_value then
-      best, best_value = object, value
+    if not object.purge then
+      local value = evaluator(object)
+      if value < best_value then
+        best, best_value = object, value
+      end
     end
   end
   return best, best_value
@@ -418,7 +424,7 @@ function GameObject.getLeastOfType(typename, evaluator)
   local t = __TYPE[typename]
   local best, best_value = nil, math.huge
   for i, object in ipairs(__INSTANCES) do
-    if object.type == t then
+    if not object.purge and (object.type == t) then
       local value = evaluator(object)
       if value < best_value then
         best, best_value = object, value
@@ -435,7 +441,7 @@ find nearest/furthest
 function GameObject.getNearest(x, y, suchThat)
   local nearest, nearest_distance2 = nil, math.huge
   for i, object in ipairs(__INSTANCES) do
-    if (not suchThat) or suchThat(object) then
+    if not object.purge and ((not suchThat) or suchThat(object)) then
       local distance2 = vector.dist2(x, y, object.x, object.y)
       if distance2 < nearest_distance2 then
         nearest, nearest_distance2 = object, distance2
@@ -448,7 +454,7 @@ end
 function GameObject.getFurthest(x, y, suchThat)
   local furthest, furthest_distance2 = nil, math.huge
   for i, object in ipairs(__INSTANCES) do
-    if (not suchThat) or suchThat(object) then
+    if not object.purge and ((not suchThat) or suchThat(object)) then
       local distance2 = vector.dist2(x, y, object.x, object.y)
       if distance2 > nearest_distance2 then
         furthest, furthest_distance2 = object, distance2
@@ -462,7 +468,7 @@ function GameObject.getNearestOfType(typename, x, y, suchThat)
   local t = __TYPE[typename]
   local nearest, nearest_distance2 = nil, math.huge
   for i, object in ipairs(__INSTANCES) do
-    if object.type == t then
+    if not object.purge and (object.type == t) then
       if (not suchThat) or suchThat(object) then
         local distance2 = vector.dist2(x, y, object.x, object.y)
         if distance2 < nearest_distance2 then
@@ -478,7 +484,7 @@ function GameObject.getFurthestOfType(typename, x, y, suchThat)
   local t = __TYPE[typename]
   local furthest, furthest_distance2 = nil, math.huge
   for i, object in ipairs(__INSTANCES) do
-    if object.type == t then
+    if not object.purge and (object.type == t) then
       if (not suchThat) or suchThat(object) then
         local distance2 = vector.dist2(x, y, object.x, object.y)
         if distance2 > nearest_distance2 then
