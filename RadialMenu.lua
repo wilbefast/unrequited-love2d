@@ -113,7 +113,11 @@ end
 function RadialMenu:getSelection(minimum_value)
 	-- return nothing until open
 	if (not self:isOpened()) then
-		return
+		return nil
+	end
+	-- only one option? Then it's always selected
+	if #self.options == 1 then
+		return self.options[1]
 	end
 	-- do we have a cached result?
 	if self.__selection then
