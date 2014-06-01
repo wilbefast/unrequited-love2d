@@ -246,7 +246,7 @@ function useful.bindBlack(a)
 end
 
 function useful.recordGIF(key)
-  if love.keyboard.isDown(key) then
+  if (not key) or love.keyboard.isDown(key) then
     local s = love.graphics.newScreenshot()
     __kev__snum = (__kev__snum or 0) + 1
     s:encode(string.format("%04d",__kev__snum)..".png")
@@ -277,6 +277,14 @@ end
 
 function useful.getTimestamp()
   return os.date("%x_%X"):gsub("[/:]", "-")
+end
+
+function useful.copyTable(t)
+  local result = {}
+  for k, v in pairs(t) do
+    result[k] = v
+  end
+  return result
 end
 
 return useful
