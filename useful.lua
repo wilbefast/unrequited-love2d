@@ -57,9 +57,22 @@ function useful.purge(objects)
   end
 end
 
+function useful.removeWhere(objects, precond)
+  local i = 1
+  while i <= #objects do
+    local o = objects[i]
+    if precond(o) then
+      table.remove(objects, i)
+    else
+      i = i + 1
+    end
+  end
+end
+
+
 -- Because Love2D implementation of args is different?
 function useful.packArgs(a, ...)
-  if a then
+  if a ~= nil then
     local ret = useful.packArgs(...)
     table.insert(ret,1,a)
     return ret
