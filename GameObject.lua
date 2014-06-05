@@ -654,10 +654,23 @@ function GameObject:accelerateTowards(x, y, speed)
   self.dx, self.dy = self.dx + ddx*speed, self.dy + ddy*speed
 end
 
+function GameObject:accelerateAwayFrom(x, y, speed)
+  speed = (speed or 1)
+  local ddx, ddy = vector.normalize(x - self.x, y - self.y)
+  self.dx, self.dy = self.dx - ddx*speed, self.dy - ddy*speed
+end
+
+
 function GameObject:accelerateTowardsObject(o, speed)
   speed = (speed or 1)
   local ddx, ddy = vector.normalize(o.x - self.x, o.y - self.y)
   self.dx, self.dy = self.dx + ddx*speed, self.dy + ddy*speed
+end
+
+function GameObject:accelerateAwayFromObject(o, speed)
+  speed = (speed or 1)
+  local ddx, ddy = vector.normalize(o.x - self.x, o.y - self.y)
+  self.dx, self.dy = self.dx - ddx*speed, self.dy - ddy*speed
 end
 
 function GameObject:springTowards(x, y, springConstant)
@@ -666,11 +679,28 @@ function GameObject:springTowards(x, y, springConstant)
   self.dx, self.dy = self.dx + ddx*springConstant, self.dy + ddy*springConstant
 end
 
+function GameObject:springAwayFrom(x, y, springConstant)
+  springConstant = (springConstant or 1)
+  local ddx, ddy = x - self.x, y - self.y
+  if math.abs(ddx) < 1 then ddx = useful.sign(ddx)*1 end
+  if math.abs(ddy) < 1 then ddy = useful.sign(ddy)*1 end
+  self.dx, self.dy = self.dx - springConstant/ddx, self.dy - springConstant/ddy
+end
+
 function GameObject:springTowardsObject(o, springConstant)
   springConstant = (springConstant or 1)
   local ddx, ddy = o.x - self.x, o.y - self.y
   self.dx, self.dy = self.dx + ddx*springConstant, self.dy + ddy*springConstant
 end
+
+function GameObject:springAwayFromObject(o, springConstant)
+  springConstant = (springConstant or 1)
+  local ddx, ddy = o.x - self.x, o.y - self.y
+  if math.abs(ddx) < 1 then ddx = useful.sign(ddx)*1 end
+  if math.abs(ddy) < 1 then ddy = useful.sign(ddy)*1 end
+  self.dx, self.dy = self.dx - springConstant/ddx, self.dy - springConstant/ddy
+end
+
 
 
 --[[------------------------------------------------------------
@@ -708,6 +738,13 @@ function GameObject:update(dt)
   end
   if (self.dy ~= 0) and fisix.MAX_DY and (abs_dy > fisix.MAX_DY) then
     self.dy = fisix.MAX_DY*useful.sign(self.dy)
+  end
+  if fisix.MAX_SPEED then
+    local speed2 = vector.len(self.dx, self.dy)
+    if speed2 > fisix.MAX_SPEED*fisix.MAX_SPEED then
+      local dx, dy = vector.normalize(self.dx, self.dy)
+      self.dx, self.dy = dx*fisix.MAX_SPEED, dy*fisix.MAX_SPEED
+    end
   end
   
   -- clamp less than epsilon inertia to 0
