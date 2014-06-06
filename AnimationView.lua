@@ -86,7 +86,7 @@ Mutators
 --]]--
 
 function AnimationView:seekRandom()
-  self.frame = math.random(self.anim.n_frames)
+  self:seekPercent(math.random())
 end
 
 function AnimationView:seekPercent(p)
