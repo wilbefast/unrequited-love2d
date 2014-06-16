@@ -20,6 +20,8 @@ IMPORTS
 local Class = require("hump/class")
 local useful = require("unrequited/useful")
 
+local fudge = nil
+
 --[[------------------------------------------------------------
 ANIMATION CLASS
 --]]------------------------------------------------------------
@@ -32,6 +34,14 @@ local Animation = Class
 {
   init = function(self, img, w, h, n_frames, offx, offy, scalex, scaley)
   
+    if type(img) == "table" then
+      if not fudge then
+        fudge = require("fudge/src/fudge")
+      end
+      self.fudge = img
+      img = self.fudge.img
+    end
+
     -- remember frame number to prevent array out-of-bounds
     self.n_frames = (n_frames or 1)
     
@@ -43,6 +53,10 @@ local Animation = Class
 
     -- create quads
     offx, offy = (offx or 0), (offy or 0)
+    if self.fudge then
+      local qx, qy = self.fudge.quad:getViewport()
+      offx, offy = offx + qx, offy + qy
+    end
     self.quads= {}
     for i = 1, n_frames do
       self.quads[i] = love.graphics.newQuad(offx + (i-1)*w, offy, 
@@ -68,8 +82,14 @@ function Animation:draw(x, y, subimage, scalex, scaley, ox, oy, angle)
   
   scalex = (scalex or self.scalex)
   scaley = (scaley or self.scaley)
-  love.graphics.draw(self.img, self.quads[subimage], x, y, angle or self.angle or 0,
-      scalex, scaley, ox, oy)
+
+  if self.fudge then
+    fudge.current.batch:add(self.quads[subimage], x, y, angle or self.angle or 0,
+        scalex, scaley, ox, oy)
+  else
+    love.graphics.draw(self.img, self.quads[subimage], x, y, angle or self.angle or 0,
+        scalex, scaley, ox, oy)
+  end
 end
 
 
