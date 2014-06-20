@@ -247,6 +247,7 @@ end
 
 function useful.lineBoxCollision(x1, y1, x2, y2, bx, by, bw, bh)
   -- TODO
+  print("'lineBoxCollision' is not implemented")
   return false
 end
 
@@ -298,6 +299,31 @@ function useful.copyTable(t)
     result[k] = v
   end
   return result
+end
+
+function useful.oval(mode, ox, oy, w, h)
+  local fill
+  if mode == "fill" then
+    fill = true
+  elseif mode ~= "line" then
+    print("invalid mode " .. mode)
+    return
+  end
+
+  local angle_step = math.pi*2/math.min(w, h)
+  local px, py
+  for angle = 0, math.pi*2 + angle_step, angle_step do
+    local x, y = ox + math.cos(angle)*w, oy + math.sin(angle)*h
+    
+    if px and py then
+      if fill then
+        love.graphics.polygon("fill", ox, oy, px, py, x, y)
+      else
+        love.graphics.line(px, py, x, y)
+      end
+    end
+    px, py = x, y
+  end
 end
 
 return useful
