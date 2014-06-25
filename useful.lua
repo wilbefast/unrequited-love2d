@@ -301,25 +301,36 @@ function useful.copyTable(t)
   return result
 end
 
+local __fill = 0
+local __line = 1
+local __dashfill = 2
+local __dashline = 3
 function useful.oval(mode, ox, oy, w, h)
-  local fill
-  if mode == "fill" then
-    fill = true
-  elseif mode ~= "line" then
-    print("invalid mode " .. mode)
-    return
+  if mode == "fill" then mode = __fill
+  elseif mode == "line" then mode = __line
+  elseif mode == "dashfill" then mode = __dashfill 
+  elseif mode == "dashline" then mode = __dashline
   end
 
+  local dash = false
   local angle_step = math.pi*2/math.min(w, h)
   local px, py
   for angle = 0, math.pi*2 + angle_step, angle_step do
     local x, y = ox + math.cos(angle)*w, oy + math.sin(angle)*h
-    
     if px and py then
-      if fill then
+      if mode == __fill then
         love.graphics.polygon("fill", ox, oy, px, py, x, y)
-      else
+      elseif mode == __line then
         love.graphics.line(px, py, x, y)
+      else
+        dash = (not dash)
+        if dash then
+          if mode == __dashfill then
+            love.graphics.polygon("fill", ox, oy, px, py, x, y)
+          elseif mode == __dashline then
+            love.graphics.line(px, py, x, y)
+          end
+        end
       end
     end
     px, py = x, y
