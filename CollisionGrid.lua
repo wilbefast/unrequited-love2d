@@ -129,7 +129,7 @@ Game loop
 
 function CollisionGrid:draw(view) 
 
-  local start_x, end_x, start_y, end_y = 1, 1, self.w, self.h
+  local start_x, start_y, end_x, end_y = 1, 1, self.w, self.h
   if view then
     start_x = math.max(1, math.floor(view.x / self.tilew))
     end_x = math.min(self.w, 
@@ -139,7 +139,6 @@ function CollisionGrid:draw(view)
     end_y = math.min(self.h, 
                 start_y + math.ceil(view.h / self.tileh))
   end
-
 
   -- draw tile background images
   -- ... for each column ...
@@ -251,7 +250,7 @@ function CollisionGrid:objectCollision(object, x, y)
   return (self:pixelCollision(x, y, object) 
       or  self:pixelCollision(x + object.w, y, object) 
       or  self:pixelCollision(x, y + object.h, object)
-      or  self:pixelCollision(x + object.w, y + object.h, object)
+      or  self:pixelCollision(x + object.w, y + object.h, object))
 end
 
 function CollisionGrid:collision_next(go, dt)
