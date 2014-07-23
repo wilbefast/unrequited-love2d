@@ -45,10 +45,34 @@ local CollisionGrid = Class
 
     -- create the collision map
     self.tiles = {}
-    for x = 1, self.w do
-      self.tiles[x] = {}
-      for y = 1, self.h do
-        self.tiles[x][y] = tileClass(x, y, self.tilew, self.tileh, self)
+    for col = 1, self.w do
+      self.tiles[col] = {}
+      for row = 1, self.h do
+        local t = tileClass(col, row, self.tilew, self.tileh, self)
+        t.col = col
+        t.row = row
+        t.x = (col - 1)*tilew
+        t.y = (row - 1)*tileh
+        t.w = tilew
+        t.h = tileh
+        t.grid = self
+        self.tiles[col][row] = t
+      end
+    end
+
+    -- create neighbourhood graph
+    local directions8 = { "NW", "W", "N", "NE", "SW", "S", "E", "SE" }
+    local directions4 = { "W", "N", "S", "E" }
+    local directionsX = { "NW", "NE", "SW", "SE" }
+    for col = 1, self.w do
+      for row = 1, self.h do
+        local t = self.tiles[col][row] 
+        t.neighbours8 = self:getNeighbours8(t)
+        t.neighbours4 = self:getNeighbours4(t)
+        t.neighboursX = self:getNeighboursX(t)
+        for i, dir in ipairs(directions8) do
+          t[dir] = t.neighbours8[i]
+        end
       end
     end
   end
@@ -58,20 +82,20 @@ local CollisionGrid = Class
 Map functions to all or part of the grid
 --]]--
 
-function CollisionGrid:mapRectangle(startx, starty, w, h, f)
-  for x = startx, startx + w - 1 do
-    for y = starty, starty + h - 1 do
-      if self:validGridPos(x, y) then
-        f(self.tiles[x][y], x, y)
+function CollisionGrid:mapRectangle(startCol, startRow, w, h, f)
+  for col = startCol, startCol + w - 1 do
+    for row = startRow, startRow + h - 1 do
+      if self:validGridPos(col, row) then
+        f(self.tiles[col][row], col, row)
       end
     end
   end
 end
 
 function CollisionGrid:map(f)
-  for x = 1, self.w do
-    for y = 1, self.h do
-      f(self.tiles[x][y], x, y)
+  for col = 1, self.w do
+    for row = 1, self.h do
+      f(self.tiles[col][row], col, row)
     end
   end
 end
@@ -82,43 +106,43 @@ Tile neighbours
 
 function CollisionGrid:getNeighbours8(t, centre)
   local result = {}
-  function insertIfNotNil(t, x) if x then table.insert(t, x) end end
-  insertIfNotNil(result, self:gridToTile(t.i-1, t.j-1, true))  -- NW
-  insertIfNotNil(result, self:gridToTile(t.i-1, t.j, true))    -- W
-  insertIfNotNil(result, self:gridToTile(t.i, t.j-1, true))    -- N
-  insertIfNotNil(result, self:gridToTile(t.i+1, t.j-1, true))  -- NE
-  insertIfNotNil(result, self:gridToTile(t.i-1, t.j+1, true))  -- SW
-  insertIfNotNil(result, self:gridToTile(t.i, t.j+1, true))    -- S
-  insertIfNotNil(result, self:gridToTile(t.i+1, t.j, true))    -- E
-  insertIfNotNil(result, self:gridToTile(t.i+1, t.j+1, true))  -- SE
+  function insertIfNotNil(t, value) if value then table.insert(t, value) end end
+  insertIfNotNil(result, self:gridToTile(t.col-1, t.row-1, true))  -- NW
+  insertIfNotNil(result, self:gridToTile(t.col-1, t.row, true))    -- W
+  insertIfNotNil(result, self:gridToTile(t.col, t.row-1, true))    -- N
+  insertIfNotNil(result, self:gridToTile(t.col+1, t.row-1, true))  -- NE
+  insertIfNotNil(result, self:gridToTile(t.col-1, t.row+1, true))  -- SW
+  insertIfNotNil(result, self:gridToTile(t.col, t.row+1, true))    -- S
+  insertIfNotNil(result, self:gridToTile(t.col+1, t.row, true))    -- E
+  insertIfNotNil(result, self:gridToTile(t.col+1, t.row+1, true))  -- SE
   if centre then
-    insertIfNotNil(result, self:gridToTile(t.i, t.j, true))
+    insertIfNotNil(result, self:gridToTile(t.col, t.row, true))
   end
   return result
 end
 
 function CollisionGrid:getNeighbours4(t, centre)
   local result = {}
-  function insertIfNotNil(t, x) if x then table.insert(t, x) end end
-  insertIfNotNil(result, self:gridToTile(t.i-1, t.j, true))    -- W
-  insertIfNotNil(result, self:gridToTile(t.i, t.j-1, true))    -- N
-  insertIfNotNil(result, self:gridToTile(t.i, t.j+1, true))    -- S
-  insertIfNotNil(result, self:gridToTile(t.i+1, t.j, true))    -- E
+  function insertIfNotNil(t, value) if value then table.insert(t, value) end end
+  insertIfNotNil(result, self:gridToTile(t.col-1, t.row, true))    -- W
+  insertIfNotNil(result, self:gridToTile(t.col, t.row-1, true))    -- N
+  insertIfNotNil(result, self:gridToTile(t.col, t.row+1, true))    -- S
+  insertIfNotNil(result, self:gridToTile(t.col+1, t.row, true))    -- E
   if centre then
-    insertIfNotNil(result, self:gridToTile(t.i, t.j, true))
+    insertIfNotNil(result, self:gridToTile(t.col, t.row, true))
   end
   return result
 end
 
 function CollisionGrid:getNeighboursX(t, centre)
   local result = {}
-  function insertIfNotNil(t, x) if x then table.insert(t, x) end end
-  insertIfNotNil(result, self:gridToTile(t.i-1, t.j-1, true))    -- NW
-  insertIfNotNil(result, self:gridToTile(t.i+1, t.j-1, true))    -- NE
-  insertIfNotNil(result, self:gridToTile(t.i-1, t.j+1, true))    -- SW
-  insertIfNotNil(result, self:gridToTile(t.i+1, t.j+1, true))    -- SE
+function insertIfNotNil(t, value) if value then table.insert(t, value) end end
+  insertIfNotNil(result, self:gridToTile(t.col-1, t.row-1, true))    -- NW
+  insertIfNotNil(result, self:gridToTile(t.col+1, t.row-1, true))    -- NE
+  insertIfNotNil(result, self:gridToTile(t.col-1, t.row+1, true))    -- SW
+  insertIfNotNil(result, self:gridToTile(t.col+1, t.row+1, true))    -- SE
   if centre then
-    insertIfNotNil(result, self:gridToTile(t.i, t.j, true))
+    insertIfNotNil(result, self:gridToTile(t.col, t.row, true))
   end
   return result
 end
@@ -129,25 +153,25 @@ Game loop
 
 function CollisionGrid:draw(view) 
 
-  local start_x, start_y, end_x, end_y = 1, 1, self.w, self.h
+  local start_col, start_row, end_col, end_row = 1, 1, self.w, self.h
   if view then
-    start_x = math.max(1, math.floor(view.x / self.tilew))
-    end_x = math.min(self.w, 
-                start_x + math.ceil(view.w / self.tilew))
+    start_col = math.max(1, math.floor(view.x / self.tilew))
+    end_col = math.min(self.w, 
+                start_col + math.ceil(view.w / self.tilew))
     
-    start_y = math.max(1, math.floor(view.y / self.tileh))
-    end_y = math.min(self.h, 
-                start_y + math.ceil(view.h / self.tileh))
+    start_row = math.max(1, math.floor(view.y / self.tileh))
+    end_row = math.min(self.h, 
+                start_row + math.ceil(view.h / self.tileh))
   end
 
   -- draw tile background images
   -- ... for each column ...
-  for x = start_x, end_x do
+  for col = start_col, end_col do
     -- ... for each row ...
-    for y = start_y, end_y do
-      local tile = self.tiles[x][y]
+    for row = start_row, end_row do
+      local tile = self.tiles[col][row]
 			if tile.draw then
-				tile:draw(x, y)
+				tile:draw(col, row)
       end
     end
   end
@@ -159,17 +183,17 @@ end
 Accessors
 --]]--
 
-function CollisionGrid:gridToTile(x, y, lap_around)
+function CollisionGrid:gridToTile(col, row, lap_around)
 
   if lap_around then
-    while x < 1 do x = x + self.w end
-    while y < 1 do y = y + self.h end
-    while x > self.w do x = x - self.w end
-    while y > self.h do y = y - self.h end
-    return self.tiles[x][y]
+    while col < 1 do col = col + self.w end
+    while row < 1 do row = row + self.h end
+    while col > self.w do col = col - self.w end
+    while row > self.h do row = row - self.h end
+    return self.tiles[col][row]
   else
-    if self:validGridPos(x, y) then
-      return self.tiles[x][y]
+    if self:validGridPos(col, row) then
+      return self.tiles[col][row]
     else
       return nil --FIXME return default tile
     end
@@ -193,8 +217,8 @@ function CollisionGrid:pixelToGrid(x, y)
   return math.floor(x / self.tilew) + 1, math.floor(y / self.tileh) +1
 end
 
-function CollisionGrid:gridToPixel(x, y)
-  return (x-1) * self.tilew, (y-1) * self.tileh
+function CollisionGrid:gridToPixel(col, row)
+  return (col-1) * self.tilew, (row-1) * self.tileh
 end
 
 
@@ -202,11 +226,11 @@ end
 Avoid array out-of-bounds exceptions
 --]]--
 
-function CollisionGrid:validGridPos(x, y)
-  return (x >= 1 
-      and y >= 1
-      and x <= self.w 
-      and y <= self.h) 
+function CollisionGrid:validGridPos(col, row)
+  return (col >= 1 
+      and row >= 1
+      and col <= self.w 
+      and row <= self.h) 
 end
 
 function CollisionGrid:validPixelPos(x, y)
@@ -221,9 +245,9 @@ end
 Basic collision tests
 --]]--
 
-function CollisionGrid:gridCollision(x, y, object)
+function CollisionGrid:gridCollision(col, row, object)
   type = (type or Tile.TYPE.WALL)
-  return (self:gridToTile(x, y).type == type)
+  return (self:gridToTile(col, row).type == type)
 end
 
 function CollisionGrid:pixelCollision(x, y, object)
