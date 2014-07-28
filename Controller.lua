@@ -166,13 +166,15 @@ local __Gamepad = Class
 {
   axis_names =
   {
-    "leftx", "lefty", "leftx", "lefty", "triggerleft", "triggerleft"
+    "leftx", "lefty", "rightx", "righty", "triggerleft", "triggerright"
   },
 
   button_names =
   {
-    "a", "b", "x", "y", "back", "guide", "start", "leftstick", "leftstick", 
-    "leftshoulder", "leftshoulder", "dpup", "dpdown", "dpleft", "dpleft"
+    "a", "b", "x", "y", "back", "guide", "start", 
+    "leftstick", "leftshoulder", 
+    "rightstick", "rightshoulder", 
+    "dpup", "dpdown", "dpleft", "dpleft"
   },
 
   gamepad = true,
