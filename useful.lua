@@ -310,6 +310,15 @@ function useful.oval(mode, ox, oy, w, h)
   elseif mode == "line" then mode = __line
   elseif mode == "dashfill" then mode = __dashfill 
   elseif mode == "dashline" then mode = __dashline
+  else
+    print("invalid mode '" .. mode .. "' passed to useful.oval")
+    return
+  end
+
+  if (w == 0) or (h == 0) then
+    print("invalid size " .. w .. "x" .. h .. " passed to useful.oval")
+    print(debug.traceback())
+    return
   end
 
   local dash = false
