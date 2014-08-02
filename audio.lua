@@ -17,7 +17,11 @@ local useful = require("unrequited/useful")
 
 local audio = { }
 
--- loading
+
+--[[---------------------------------------------------------------------------
+LOADING
+--]]--
+
 function audio:load(filename, type)
   local filepath = ("assets/audio/" .. filename .. ".ogg")
   return love.audio.newSource(filepath, type)
@@ -37,14 +41,19 @@ function audio:load_music(filename)
   self[filename] = self:load(filename, "stream")
 end
 
--- playing
-function audio:play_music(name, volume)
+
+--[[---------------------------------------------------------------------------
+PLAYING
+--]]--
+
+function audio:play_music(name, volume, loop)
+  if loop == nil then loop = true end
   local new_music = self[name]
   if new_music ~= self.music then
     if self.music then
       self.music:stop()
     end
-    new_music:setLooping(true)
+    new_music:setLooping(loop)
     if not self.mute then
       new_music:setVolume(volume or 1)
       new_music:play()
@@ -78,7 +87,10 @@ function audio:play_sound(name, pitch_shift, x, y, fixed_pitch)
   end
 end
 
--- mute
+
+--[[---------------------------------------------------------------------------
+MUTE
+--]]--
 
 function audio:toggle_music()
   if not self.music then
@@ -90,5 +102,32 @@ function audio:toggle_music()
   end
 end
 
--- export
+
+--[[---------------------------------------------------------------------------
+PLAYLISTS
+--]]--
+
+function audio:add_to_playlist(filename, volume)
+  self:load_music(filename)
+  if not self.playlist then self.playlist = {} end
+  table.insert(self.playlist, { name = filename, volume = volume })
+end
+
+
+--[[---------------------------------------------------------------------------
+ACTIVE WAIT
+--]]--
+
+function audio:update(dt)
+  if (not self.music) or self.music:isStopped() then
+    if self.playlist then
+      local song = useful.randIn(self.playlist)
+      self:play_music(song.name, song.volume, false)
+    end
+  end
+end
+
+--[[---------------------------------------------------------------------------
+EXPORT
+--]]--
 return audio
