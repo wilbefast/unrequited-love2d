@@ -101,6 +101,58 @@ function CollisionGrid:map(f)
 end
 
 --[[----------------------------------------------------------------------------
+Export to file
+--]]--
+
+function CollisionGrid:saveToFile(filename, tile_tostring)
+  -- open file, error check
+  local file, err = io.open(filename, "wb")
+  if err then 
+    return err 
+  end
+  local indent, newline = "   ", "\n"
+  file:write("return {" .. newline)
+    file:write(indent .. "tilew = " .. self.tilew .. "," .. newline)
+    file:write(indent .. "tileh = " .. self.tileh .. "," .. newline)
+    file:write(indent .. "w = " .. self.w .. "," .. newline)
+    file:write(indent .. "h = " .. self.h .. "," .. newline)
+    file:write(indent .. "tiles = {")
+      for col = 1, self.w do
+        file:write(newline .. indent .. indent .. "{")
+        for row = 1, self.h do
+          local tile = self.tiles[col][row]
+          local string = (tile_tostring and tile_tostring(tile)) or tile:toString()
+          file:write(string .. ((row < self.h) and "," or ""))
+        end
+        file:write("}" .. ((col < self.w) and "," or ""))
+      end
+    file:write(newline .. indent .. "}")
+  file:write(newline .. "}")
+  -- all done, clean up
+  file:close()
+end
+
+--[[----------------------------------------------------------------------------
+Restore from file
+--]]--
+
+function CollisionGrid:loadFromFile(filename, tileClass)
+  local fimport, err = loadfile(filename)
+  if err then 
+    return err 
+  end
+  local import = fimport()
+  self:init(tileClass, import.tilew, import.tileh, import.w, import.h)
+
+  for col = 1, self.w do
+    for row = 1, self.h do
+      self.tiles[col][row]:import(import.tiles[col][row])
+    end
+  end
+end
+
+
+--[[----------------------------------------------------------------------------
 Tile neighbours
 --]]--
 
