@@ -156,45 +156,44 @@ end
 Tile neighbours
 --]]--
 
-function CollisionGrid:getNeighbours8(t, centre)
+function __insertIfNotNil(t, value) table.insert(t, value or false)  end
+
+function CollisionGrid:getNeighbours8(t, centre, lap)
   local result = {}
-  function insertIfNotNil(t, value) if value then table.insert(t, value) end end
-  insertIfNotNil(result, self:gridToTile(t.col-1, t.row-1, true))  -- NW
-  insertIfNotNil(result, self:gridToTile(t.col-1, t.row, true))    -- W
-  insertIfNotNil(result, self:gridToTile(t.col, t.row-1, true))    -- N
-  insertIfNotNil(result, self:gridToTile(t.col+1, t.row-1, true))  -- NE
-  insertIfNotNil(result, self:gridToTile(t.col-1, t.row+1, true))  -- SW
-  insertIfNotNil(result, self:gridToTile(t.col, t.row+1, true))    -- S
-  insertIfNotNil(result, self:gridToTile(t.col+1, t.row, true))    -- E
-  insertIfNotNil(result, self:gridToTile(t.col+1, t.row+1, true))  -- SE
+  __insertIfNotNil(result, self:gridToTile(t.col-1, t.row-1, lap))  -- NW
+  __insertIfNotNil(result, self:gridToTile(t.col-1, t.row, lap))    -- W
+  __insertIfNotNil(result, self:gridToTile(t.col, t.row-1, lap))    -- N
+  __insertIfNotNil(result, self:gridToTile(t.col+1, t.row-1, lap))  -- NE
+  __insertIfNotNil(result, self:gridToTile(t.col-1, t.row+1, lap))  -- SW
+  __insertIfNotNil(result, self:gridToTile(t.col, t.row+1, lap))    -- S
+  __insertIfNotNil(result, self:gridToTile(t.col+1, t.row, lap))    -- E
+  __insertIfNotNil(result, self:gridToTile(t.col+1, t.row+1, lap))  -- SE
   if centre then
-    insertIfNotNil(result, self:gridToTile(t.col, t.row, true))
+    __insertIfNotNil(result, self:gridToTile(t.col, t.row, lap))
   end
   return result
 end
 
-function CollisionGrid:getNeighbours4(t, centre)
+function CollisionGrid:getNeighbours4(t, centre, lap)
   local result = {}
-  function insertIfNotNil(t, value) if value then table.insert(t, value) end end
-  insertIfNotNil(result, self:gridToTile(t.col-1, t.row, true))    -- W
-  insertIfNotNil(result, self:gridToTile(t.col, t.row-1, true))    -- N
-  insertIfNotNil(result, self:gridToTile(t.col, t.row+1, true))    -- S
-  insertIfNotNil(result, self:gridToTile(t.col+1, t.row, true))    -- E
+  __insertIfNotNil(result, self:gridToTile(t.col-1, t.row, lap))    -- W
+  __insertIfNotNil(result, self:gridToTile(t.col, t.row-1, lap))    -- N
+  __insertIfNotNil(result, self:gridToTile(t.col, t.row+1, lap))    -- S
+  __insertIfNotNil(result, self:gridToTile(t.col+1, t.row, lap))    -- E
   if centre then
-    insertIfNotNil(result, self:gridToTile(t.col, t.row, true))
+    __insertIfNotNil(result, self:gridToTile(t.col, t.row, lap))
   end
   return result
 end
 
-function CollisionGrid:getNeighboursX(t, centre)
+function CollisionGrid:getNeighboursX(t, centre, lap)
   local result = {}
-function insertIfNotNil(t, value) if value then table.insert(t, value) end end
-  insertIfNotNil(result, self:gridToTile(t.col-1, t.row-1, true))    -- NW
-  insertIfNotNil(result, self:gridToTile(t.col+1, t.row-1, true))    -- NE
-  insertIfNotNil(result, self:gridToTile(t.col-1, t.row+1, true))    -- SW
-  insertIfNotNil(result, self:gridToTile(t.col+1, t.row+1, true))    -- SE
+  __insertIfNotNil(result, self:gridToTile(t.col-1, t.row-1, lap))    -- NW
+  __insertIfNotNil(result, self:gridToTile(t.col+1, t.row-1, lap))    -- NE
+  __insertIfNotNil(result, self:gridToTile(t.col-1, t.row+1, lap))    -- SW
+  __insertIfNotNil(result, self:gridToTile(t.col+1, t.row+1, lap))    -- SE
   if centre then
-    insertIfNotNil(result, self:gridToTile(t.col, t.row, true))
+    __insertIfNotNil(result, self:gridToTile(t.col, t.row, lap))
   end
   return result
 end
