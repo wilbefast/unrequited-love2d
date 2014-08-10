@@ -306,9 +306,9 @@ function CollisionGrid:pixelCollision(x, y, object)
 	if not tile then
 		return true
 	elseif object and object.canEnterTile then
-		return object:canEnterTile(tile)
+		return not object:canEnterTile(tile)
 	else
-		return tile:canBeEntered()
+		return not tile:canBeEntered()
 	end
 end
 
@@ -320,15 +320,16 @@ function CollisionGrid:objectCollision(object, x, y)
   -- x & y are optional: leave them out to test the object where it actually is
   x = (x or go.x)
   y = (y or go.y)
+  local w, h = object.w or object.r or 0, object.h or object.r or 0
   
   -- rectangle collision mask, origin is at the top-left
   return (self:pixelCollision(x, y, object) 
-      or  self:pixelCollision(x + object.w, y, object) 
-      or  self:pixelCollision(x, y + object.h, object)
-      or  self:pixelCollision(x + object.w, y + object.h, object))
+      or  self:pixelCollision(x + w, y, object) 
+      or  self:pixelCollision(x, y + h, object)
+      or  self:pixelCollision(x + w, y + h, object))
 end
 
-function CollisionGrid:collision_next(go, dt)
+function CollisionGrid:objectCollisionNext(go, dt)
   return self:collision(go, go.x + go.dx*dt, go.y + go.dy*dt)
 end
 

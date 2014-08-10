@@ -753,16 +753,21 @@ function GameObject:update(dt)
   
   
   if GameObject.COLLISIONGRID then
+
+    local w, h = self.w or self.r or 0, self.h or self.r or 0
+    
     local collisiongrid = GameObject.COLLISIONGRID
     -- check if we're on the ground
-    self.airborne = 
-      ((not collisiongrid:pixelCollision(self.x, self.y + self.h + 1, collide_type)
-      and (not collisiongrid:pixelCollision(self.x + self.w, self.y + self.h + 1, collide_type))))
-    if not self.airborne and self.dy > 0 then
-      if collisiongrid:collision(self, collide_type) then
-        self:snap_from_collision(0, -1, collisiongrid, math.abs(self.dy), collide_type)
+    if fisix.GRAVITY then
+      self.airborne = 
+        ((not collisiongrid:pixelCollision(self.x, self.y + h + 1, collide_type)
+        and (not collisiongrid:pixelCollision(self.x + w, self.y + h + 1, collide_type))))
+      if not self.airborne and self.dy > 0 then
+        if collisiongrid:collision(self, collide_type) then
+          self:snap_from_collision(0, -1, collisiongrid, math.abs(self.dy), collide_type)
+        end
+        self.dy = 0
       end
-      self.dy = 0
     end
     
     -- move HORIZONTALLY FIRST
@@ -771,7 +776,7 @@ function GameObject:update(dt)
       local new_x = self.x + move_x
       self.prevx = self.x
       -- is new x in collision ?
-      if collisiongrid:collision(self, new_x, self.y) then
+      if collisiongrid:objectCollision(self, new_x, self.y) then
         -- move as far as possible towards new position
         self:snap_to_collision(useful.sign(self.dx), 0, 
                           collisiongrid, math.abs(self.dx))
