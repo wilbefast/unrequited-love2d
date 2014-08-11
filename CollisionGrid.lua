@@ -144,19 +144,21 @@ end
 Restore from file
 --]]--
 
+function CollisionGrid:loadFromObject(object, tileClass)
+  self:init(tileClass, object.tilew, object.tileh, object.w, object.h)
+  for col = 1, self.w do
+    for row = 1, self.h do
+      self.tiles[col][row]:import(object.tiles[col][row])
+    end
+  end
+end
+
 function CollisionGrid:loadFromFile(filename, tileClass)
   local fimport, err = loadfile(filename)
   if err then 
     return err 
   end
-  local import = fimport()
-  self:init(tileClass, import.tilew, import.tileh, import.w, import.h)
-
-  for col = 1, self.w do
-    for row = 1, self.h do
-      self.tiles[col][row]:import(import.tiles[col][row])
-    end
-  end
+  self:loadFromObject(fimport())
 end
 
 
