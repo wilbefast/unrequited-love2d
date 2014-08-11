@@ -104,30 +104,38 @@ end
 Export to file
 --]]--
 
-function CollisionGrid:saveToFile(filename, tile_tostring)
+function CollisionGrid:toString(tile_tostring)
+  local result = ""
+  local indent, newline = "   ", "\n"
+
+  result = result .. "{" .. newline
+    result = result .. indent .. "tilew = " .. self.tilew .. "," .. newline
+    result = result .. indent .. "tileh = " .. self.tileh .. "," .. newline
+    result = result .. indent .. "w = " .. self.w .. "," .. newline
+    result = result .. indent .. "h = " .. self.h .. "," .. newline
+    result = result .. indent .. "tiles = {"
+      for col = 1, self.w do
+        result = result .. newline .. indent .. indent .. "{"
+        for row = 1, self.h do
+          local tile = self.tiles[col][row]
+          local string = (tile_tostring and tile_tostring(tile)) or tile:toString()
+          result = result .. string .. ((row < self.h) and "," or "")
+        end
+        result = result .. "}" .. ((col < self.w) and "," or "")
+      end
+    result = result .. newline .. indent .. "}"
+  result = result .. newline .. "}"
+
+  return result
+end
+
+function CollisionGrid:saveToFile(filename, tile_toString)
   -- open file, error check
   local file, err = io.open(filename, "wb")
   if err then 
     return err 
   end
-  local indent, newline = "   ", "\n"
-  file:write("return {" .. newline)
-    file:write(indent .. "tilew = " .. self.tilew .. "," .. newline)
-    file:write(indent .. "tileh = " .. self.tileh .. "," .. newline)
-    file:write(indent .. "w = " .. self.w .. "," .. newline)
-    file:write(indent .. "h = " .. self.h .. "," .. newline)
-    file:write(indent .. "tiles = {")
-      for col = 1, self.w do
-        file:write(newline .. indent .. indent .. "{")
-        for row = 1, self.h do
-          local tile = self.tiles[col][row]
-          local string = (tile_tostring and tile_tostring(tile)) or tile:toString()
-          file:write(string .. ((row < self.h) and "," or ""))
-        end
-        file:write("}" .. ((col < self.w) and "," or ""))
-      end
-    file:write(newline .. indent .. "}")
-  file:write(newline .. "}")
+  file:write("return " .. self:toString(tile_toString))
   -- all done, clean up
   file:close()
 end
