@@ -751,12 +751,15 @@ function GameObject:update(dt)
   if math.abs(self.dx) < 0.01 then self.dx = 0 end
   if math.abs(self.dy) < 0.01 then self.dy = 0 end
   
+  -- if self:isType("Attacker") then
+  --   print("DERP", terrain, self.COLLISIONGRID)
+  -- end
   
-  if GameObject.COLLISIONGRID then
+  if self.COLLISIONGRID then
 
     local w, h = self.w or self.r or 0, self.h or self.r or 0
     
-    local collisiongrid = GameObject.COLLISIONGRID
+    local collisiongrid = self.COLLISIONGRID
     -- check if we're on the ground
     if fisix.GRAVITY then
       self.airborne = 
@@ -770,6 +773,7 @@ function GameObject:update(dt)
       end
     end
     
+
     -- move HORIZONTALLY FIRST
     if self.dx ~= 0 then
       local move_x = self.dx * dt
