@@ -340,7 +340,7 @@ function CollisionGrid:objectCollision(object, x, y)
 end
 
 function CollisionGrid:objectCollisionNext(go, dt)
-  return self:collision(go, go.x + go.dx*dt, go.y + go.dy*dt)
+  return self:objectCollision(go, go.x + go.dx*dt, go.y + go.dy*dt)
 end
 
 

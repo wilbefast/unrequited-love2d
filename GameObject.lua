@@ -522,7 +522,7 @@ end
 
 function GameObject:snap_from_collision(dx, dy, collisiongrid, max, type)
   local i = 0
-  while collisiongrid:collision(self, self.x, self.y, type) 
+  while collisiongrid:objectCollision(self, self.x, self.y, type) 
   and (not max or i < max)  do
     self.x = self.x + dx
     self.y = self.y + dy
@@ -532,7 +532,7 @@ end
 
 function GameObject:snap_to_collision(dx, dy, collisiongrid, max, type)
   local i = 0
-  while not collisiongrid:collision(self, self.x + dx, self.y + dy, type) 
+  while not collisiongrid:objectCollision(self, self.x + dx, self.y + dy, type) 
         and (not max or i < max)  do
     self.x = self.x + dx
     self.y = self.y + dy
@@ -762,7 +762,7 @@ function GameObject:update(dt)
         ((not collisiongrid:pixelCollision(self.x, self.y + h + 1, collide_type)
         and (not collisiongrid:pixelCollision(self.x + w, self.y + h + 1, collide_type))))
       if not self.airborne and self.dy > 0 then
-        if collisiongrid:collision(self, collide_type) then
+        if collisiongrid:objectCollision(self, self.x, self.y, collide_type) then
           self:snap_from_collision(0, -1, collisiongrid, math.abs(self.dy), collide_type)
         end
         self.dy = 0
@@ -793,7 +793,7 @@ function GameObject:update(dt)
       local new_y = self.y + move_y
       self.prevy = self.y
       -- is new y position free ?
-      if collisiongrid:collision(self, self.x, new_y) then
+      if collisiongrid:objectCollision(self, self.x, new_y) then
         -- if not move as far as possible
         self:snap_to_collision(0, useful.sign(self.dy), collisiongrid, math.abs(self.dy))
         self.dy = 0
