@@ -90,8 +90,7 @@ function AnimationView:seekRandom()
 end
 
 function AnimationView:seekPercent(p)
-  if p > 1 then p = 1 elseif p < 0 then p = 0 end
-  self.frame = ((self.anim.n_frames-1) * p) + 1
+  self.frame = self.anim:frameAtPercent(p)
 end
 
 function AnimationView:setAnimation(anim)
