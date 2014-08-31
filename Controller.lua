@@ -54,9 +54,9 @@ end
 function Controller:addButton(name, fpressed)
   local button = { 
     name = name,
-    name_pressed = name .. "_pressed",
+    name_held = name .. "_held",
     __fpressed = fpressed, 
-    __pressed_prev = false, 
+    __held_prev = false, 
     pressed = false, 
     trigger = 0
   }
@@ -77,9 +77,9 @@ function Controller:update(dt)
   end
 
   for _, button in pairs(self.buttons) do    
-    button.__pressed_prev = button.pressed
+    button.__held_prev = button.pressed
     button.pressed = button.__fpressed()
-    if button.pressed == button.__pressed_prev then
+    if button.pressed == button.__held_prev then
       button.trigger = 0
     elseif button.pressed then
       button.trigger = 1
@@ -89,7 +89,7 @@ function Controller:update(dt)
 
     -- shortcut access
     self[button.name] = (button.trigger == 1)
-    self[button.name_pressed] = button.pressed
+    self[button.name_held] = button.pressed
   end
 end
 
