@@ -32,7 +32,7 @@ Initialisation
 
 local Animation = Class
 {
-  init = function(self, img, w, h, n_frames, offx, offy, scalex, scaley)
+  init = function(self, img, w, h, n_frames, offx, offy, scalex, scaley, ox, oy)
   
     if type(img) == "table" then
       if not fudge then
@@ -65,6 +65,9 @@ local Animation = Class
     
     -- frame size can be useful for lookup even if anim no longer needs it
     self.frame_w, self.frame_h = w, h
+
+    -- not all animation have the centre in the same place
+    self.ox, self.oy = ox, oy
   end,
 }
   
@@ -82,6 +85,8 @@ function Animation:draw(x, y, subimage, scalex, scaley, ox, oy, angle)
   
   scalex = (scalex or self.scalex)
   scaley = (scaley or self.scaley)
+  ox = (ox or self.ox)
+  oy = (oy or self.oy)
 
   if self.fudge then
     fudge.current.batch:add(self.quads[subimage], x, y, angle or self.angle or 0,

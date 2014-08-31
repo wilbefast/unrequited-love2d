@@ -37,8 +37,8 @@ local AnimationView = Class
     
     self.frame = useful.clamp(frame or math.random(self.anim.n_frames), 
                               1, self.anim.n_frames)
-    self.offx = (offx or 0)
-    self.offy = (offy or 0)
+    self.offx = offx
+    self.offy = offy
     self.sizex = (sizex or 1)
     self.sizey = (sizey or 1)
     self.flipx = 1
