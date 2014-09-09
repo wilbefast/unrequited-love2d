@@ -376,4 +376,14 @@ function useful.arc(mode, ox, oy, radius, start_angle, amount)
   end
 end
 
+function useful.shuffle(t)
+  for i = #t, 2, -1 do
+    local j = math.random(1, i)
+    local swap = t[i]
+    t[i] = t[j]
+    t[j] = swap
+  end
+  return t
+end
+
 return useful
