@@ -386,4 +386,15 @@ function useful.shuffle(t)
   return t
 end
 
+function useful.shuffled_ipairs(t, f)
+  local indices = {}
+  for i = 1, #t do
+    indices[i] = i
+  end
+  useful.shuffle(indices)
+  for i = 1, #indices do
+    f(t[indices[i]])
+  end
+end
+
 return useful
