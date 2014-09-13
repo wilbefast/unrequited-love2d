@@ -393,7 +393,9 @@ function useful.shuffled_ipairs(t, f)
   end
   useful.shuffle(indices)
   for i = 1, #indices do
-    f(t[indices[i]])
+    if f(t[indices[i]]) then
+      return
+    end
   end
 end
 
