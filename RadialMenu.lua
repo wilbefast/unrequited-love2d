@@ -50,13 +50,14 @@ function RadialMenu:addOption(option, angle)
 		angle = math.pi*2/#self.options
 		-- change positions of previous options
 		for i, o in ipairs(self.options) do
-			local o_angle = angle*(i - 0.75)
-			o.x = math.cos(o_angle)*self.radius
-			o.y = math.sin(o_angle)*self.radius
+			o.angle = angle*(i - 0.75)
+			o.x = math.cos(o.angle)*self.radius
+			o.y = math.sin(o.angle)*self.radius
 		end
 	else
 		option.x = math.cos(angle)*self.radius
 		option.y = math.sin(angle)*self.radius
+		option.angle = angle
 	end
 end
 
@@ -151,7 +152,7 @@ function RadialMenu:draw(x, y, context)
 	for i, option in ipairs(self.options) do
 		local offset_x, offset_y = option.x*self.__open, option.y*self.__open
 		-- draw the option
-		option.draw(x + offset_x, y + offset_y, (option == selection), self.__open, context)
+		option:draw(x + offset_x, y + offset_y, (option == selection), self.__open, context)
 	end
 end
 
