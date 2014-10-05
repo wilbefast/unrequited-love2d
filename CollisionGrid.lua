@@ -266,6 +266,11 @@ function CollisionGrid:pixelToTile(x, y)
                          math.floor(y / self.tileh) + 1)
 end
 
+function CollisionGrid:centreOfTileAt(x, y)
+  local t = self:pixelToTile(x, y)
+  return t.x + t.w/2, t.y + t.h/2
+end
+
 function CollisionGrid:centrePixel()
   return self.w*self.tilew/2, self.h*self.tileh/2
 end
