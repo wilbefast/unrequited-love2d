@@ -422,7 +422,7 @@ function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
     if state.currentTile == endTile then
       -- read back and return the result
       while state do
-        table.insert(path, state.currentTile)
+        table.insert(path, 0, state.currentTile)
         state = state.previousPathState
       end
       return path
@@ -442,7 +442,12 @@ end
 function CollisionGrid:pixelPath(startx, starty, endx, endy, object)
   local startcol, startrow = self:pixelToGrid(startx, starty)
   local endcol, endrow = self:pixelToGrid(endx, endy)
-  return self:gridPath(startcol, startrow, endcol, endrow, object)
+  local gridPath = self:gridPath(startcol, startrow, endcol, endrow, object)
+  local pixelPath = {}
+  for _, tile in ipairs(gridPath) do
+    table.insert(pixelPath, { x = tile.x + tile.w*0.5, y = tile.y + tile.h*0.5 })
+  end
+  return pixelPath
 end
 
 function CollisionGrid:gridRayCollision(startcol, startrow, endcol, endrow, object)
