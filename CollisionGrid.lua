@@ -347,7 +347,105 @@ end
 Pathing
 --]]--
 
-function CollisionGrid:gridRayCollision(startcol, startrow, endcol, endrow)
+local __estimatePathCost = function(startTile, endTile)
+  return Vector.len(startTile.col, startTile.row, endTile.col, endTile.row)
+end
+
+local __setPathStatePrevious = function(pathState, previousPathState)
+  pathState.previousPathState = previousPathState;
+  pathState.currentCost = previousPathState.currentCost + 1;
+end
+
+local __createPathState = function(currentTile, goalTile, previousPathState)
+  local pathState = {
+    currentTile = currentTile,
+    goalTile = goalTile,
+    opened = false,
+    closed = false,
+  }
+  if previousPathState then
+    __setPathStatePrevious(pathState, previousPathState)
+  else
+    pathState.currentCost = 0
+  end
+  pathState.remainingCostEstimate = __estimatePathCost(pathState.currentTile, pathState.goalTile)
+  pathState.totalCostEstimate = pathState.currentCost + pathState.remainingCostEstimate
+  return pathState
+end
+
+
+local __expandPathState = function(pathState, allStates, openStates)
+  for _, neighbourTile in ipairs(pathState.currentTile.neighbours4) do
+    if neighbourTile and neighbourTile:canBeEntered() then
+
+      -- find or create the neighbour state
+      local neighbourState = allStates[neighbourTile]
+      if not neighbourState then
+        neighbourState = __createPathState(neighbourTile, pathState.goalTile, pathState)
+        allStates[neighbourTile] = neighbourState
+      end
+
+      -- do nothing if the state is closed
+      if not neighbourState.closed then
+        if not neighbourState.opened then
+          -- always open states that have not yet been opened and create a link
+          __setPathStatePrevious(neighbourState, pathState)
+          neighbourState.opened = true
+          table.insert(openStates, neighbourState)
+        else
+          -- create a link with already open states provided the cost would be improved
+          if pathState.currentCost < neighbourState.currentCost then
+            __setPathStatePrevious(neighbourState, pathState)
+          end
+        end
+      end
+    end
+  end
+  -- sort the lowest cost states the the end of the table, they will be popped first
+  table.sort(openStates, function(a, b) return (a.totalCostEstimate > b.totalCostEstimate) end)
+end
+
+function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
+
+  local startTile = self:gridToTile(startcol, startrow)
+  local endTile = self:gridToTile(endcol, endrow)
+  local startState = __createPathState(startTile, endTile)
+
+  local path = { }
+  local openStates = { startState }
+  local allStates = { startTile = startState}
+
+  while (#openStates > 0) do
+    -- expand from the open state that is currently cheapest
+    local state = table.remove(openStates)
+    -- have we reached the end?
+    if state.currentTile == endTile then
+      -- read back and return the result
+      while state do
+        table.insert(path, state.currentTile)
+        state = state.previousPathState
+      end
+      return path
+    end
+
+    -- try to expand each neighbour
+    __expandPathState(state, allStates, openStates)
+
+    -- remember to close the state now that all connections have been expanded
+    state.closed = true
+  end
+
+  -- fail!
+  return path
+end
+
+function CollisionGrid:pixelPath(startx, starty, endx, endy, object)
+  local startcol, startrow = self:pixelToGrid(startx, starty)
+  local endcol, endrow = self:pixelToGrid(endx, endy)
+  return self:gridPath(startcol, startrow, endcol, endrow, object)
+end
+
+function CollisionGrid:gridRayCollision(startcol, startrow, endcol, endrow, object)
   -- http://en.wikipedia.org/wiki/Bresenham's_line_algorithm
   local dx = math.abs(endcol - startcol)
   local dy = math.abs(endrow - startrow)
@@ -356,7 +454,7 @@ function CollisionGrid:gridRayCollision(startcol, startrow, endcol, endrow)
   local err = dx - dy
 
   while (startcol ~= endcol) or (startrow ~= endrow) do
-    if self:gridCollision(startcol, startrow) then
+    if self:gridCollision(startcol, startrow, object) then
       -- the way is shut (it was made by those who are dead)
       return { col = startcol, row = startrow }
     end
@@ -376,10 +474,10 @@ function CollisionGrid:gridRayCollision(startcol, startrow, endcol, endrow)
   return nil
 end
 
-function CollisionGrid:pixelRayCollision(startx, starty, endx, endy)
+function CollisionGrid:pixelRayCollision(startx, starty, endx, endy, object)
   local startcol, startrow = self:pixelToGrid(startx, starty)
   local endcol, endrow = self:pixelToGrid(endx, endy)
-  return self:gridRayCollision(startcol, startrow, endcol, endrow);
+  return self:gridRayCollision(startcol, startrow, endcol, endrow, object)
 end
 
 --[[------------------------------------------------------------
