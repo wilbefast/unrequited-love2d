@@ -266,11 +266,6 @@ function CollisionGrid:pixelToTile(x, y)
                          math.floor(y / self.tileh) + 1)
 end
 
-function CollisionGrid:centreOfTileAt(x, y)
-  local t = self:pixelToTile(x, y)
-  return t.x + t.w/2, t.y + t.h/2
-end
-
 function CollisionGrid:centrePixel()
   return self.w*self.tilew/2, self.h*self.tileh/2
 end
@@ -280,11 +275,11 @@ Conversion
 --]]--
 
 function CollisionGrid:pixelToGrid(x, y)
-  return math.floor(x / self.tilew) + 1, math.floor(y / self.tileh) +1
+  return math.floor(x / self.tilew) + 1, math.floor(y / self.tileh) + 1
 end
 
 function CollisionGrid:gridToPixel(col, row)
-  return (col-1) * self.tilew, (row-1) * self.tileh
+  return (col-0.5) * self.tilew, (row-0.5) * self.tileh
 end
 
 
@@ -312,19 +307,19 @@ Basic collision tests
 --]]--
 
 function CollisionGrid:gridCollision(col, row, object)
-  type = (type or Tile.TYPE.WALL)
-  return (self:gridToTile(col, row).type == type)
+  local tile = self:gridToTile(col, row)
+  if not tile then
+    return true
+  elseif object and object.canEnterTile then
+    return not object:canEnterTile(tile)
+  else
+    return not tile:canBeEntered()
+  end
 end
 
 function CollisionGrid:pixelCollision(x, y, object)
-  local tile = self:pixelToTile(x, y)
-	if not tile then
-		return true
-	elseif object and object.canEnterTile then
-		return not object:canEnterTile(tile)
-	else
-		return not tile:canBeEntered()
-	end
+  local col, row = self:pixelToGrid(x, y, object)
+  return self:gridCollision(col, row, object)
 end
 
 --[[----------------------------------------------------------------------------
@@ -348,6 +343,44 @@ function CollisionGrid:objectCollisionNext(go, dt)
   return self:objectCollision(go, go.x + go.dx*dt, go.y + go.dy*dt)
 end
 
+--[[----------------------------------------------------------------------------
+Pathing
+--]]--
+
+function CollisionGrid:gridRayCollision(startcol, startrow, endcol, endrow)
+  -- http://en.wikipedia.org/wiki/Bresenham's_line_algorithm
+  local dx = math.abs(endcol - startcol)
+  local dy = math.abs(endrow - startrow)
+  local sx = ((startcol < endcol) and 1) or -1
+  local sy = ((startrow < endrow) and 1) or -1
+  local err = dx - dy
+
+  while (startcol ~= endcol) or (startrow ~= endrow) do
+    if self:gridCollision(startcol, startrow) then
+      -- the way is shut (it was made by those who are dead)
+      return { col = startcol, row = startrow }
+    end
+    local err2 = 2*err;
+    --  move horizontally
+    if err2 > -dy then
+      err = err - dy
+      startcol = startcol + sx
+    end
+    -- move vertically
+    if err2 < dx then
+      err = err + dx
+      startrow = startrow + sy
+    end
+  end
+  -- made it - the way is clear!
+  return nil
+end
+
+function CollisionGrid:pixelRayCollision(startx, starty, endx, endy)
+  local startcol, startrow = self:pixelToGrid(startx, starty)
+  local endcol, endrow = self:pixelToGrid(endx, endy)
+  return self:gridRayCollision(startcol, startrow, endcol, endrow);
+end
 
 --[[------------------------------------------------------------
 EXPORT
