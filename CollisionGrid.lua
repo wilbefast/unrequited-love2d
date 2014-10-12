@@ -282,6 +282,11 @@ function CollisionGrid:gridToPixel(col, row)
   return (col-0.5) * self.tilew, (row-0.5) * self.tileh
 end
 
+function CollisionGrid:snapPixelToGrid(x, y)
+  return (math.floor(x / self.tilew) + 0.5) * self.tilew,
+          (math.floor(y / self.tileh) + 0.5) * self.tileh
+end
+
 
 --[[----------------------------------------------------------------------------
 Avoid array out-of-bounds exceptions
