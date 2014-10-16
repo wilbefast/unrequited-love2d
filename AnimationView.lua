@@ -108,6 +108,10 @@ function AnimationView:getAnimationProgress()
   return (self.frame-1) / self.anim.n_frames
 end
 
+function AnimationView:getTimeLeft()
+  return (self.anim.n_frames - self.frame)/self.speed
+end
+
 --[[------------------------------------------------------------
 EXPORT
 --]]------------------------------------------------------------
