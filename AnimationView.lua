@@ -59,7 +59,15 @@ function AnimationView:draw(object, x, y, angle, sizex, sizey)
 end
 
 function AnimationView:update(dt)
+  local prev_frame = math.floor(self.frame)
   self.frame = self.frame + self.speed*dt
+  local new_frame = math.floor(self.frame)
+  if prev_frame ~= new_frame then
+    self.new_frame = new_frame
+  else
+    self.new_frame = false
+  end
+
   if self.frame >= self.anim.n_frames + 1 then
     if self.autoReverse then
       self.speed = -self.speed
