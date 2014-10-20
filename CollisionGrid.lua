@@ -357,8 +357,8 @@ local __estimatePathCost = function(startTile, endTile)
 end
 
 local __setPathStatePrevious = function(pathState, previousPathState)
-  pathState.previousPathState = previousPathState;
-  pathState.currentCost = previousPathState.currentCost + 1;
+  pathState.previousPathState = previousPathState
+  pathState.currentCost = previousPathState.currentCost + 1
 end
 
 local __createPathState = function(currentTile, goalTile, previousPathState)
@@ -406,8 +406,6 @@ local __expandPathState = function(pathState, allStates, openStates)
       end
     end
   end
-  -- sort the lowest cost states the the end of the table, they will be popped first
-  table.sort(openStates, function(a, b) return (a.totalCostEstimate > b.totalCostEstimate) end)
 end
 
 function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
@@ -416,15 +414,17 @@ function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
   local endTile = self:gridToTile(endcol, endrow)
   local startState = __createPathState(startTile, endTile)
 
-  local path = { }
   local openStates = { startState }
   local allStates = { startTile = startState}
+
+  local fallback = nil
 
   while (#openStates > 0) do
     -- expand from the open state that is currently cheapest
     local state = table.remove(openStates)
     -- have we reached the end?
     if state.currentTile == endTile then
+      local path = { }
       -- read back and return the result
       while state do
         table.insert(path, 0, state.currentTile)
@@ -438,9 +438,26 @@ function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
 
     -- remember to close the state now that all connections have been expanded
     state.closed = true
+
+    -- keep the best closed state, just in case the target is inaccessible
+    if not fallback or __estimatePathCost(state.currentTile, endTile)
+    < __estimatePathCost(fallback.currentTile, endTile) then
+      fallback_plan = state
+    end
+
+    -- sort the lowest cost states the the end of the table, they will be popped first
+    table.sort(openStates, function(a, b) return (a.totalCostEstimate > b.totalCostEstimate) end)
   end
 
   -- fail!
+  local path = { }
+  if fallback then
+    local state = fallback
+    while state do
+      table.insert(path, 0, state.currentTile)
+      state = state.previousPathState
+    end
+  end
   return path
 end
 
