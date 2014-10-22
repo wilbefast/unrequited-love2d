@@ -379,9 +379,9 @@ local __createPathState = function(currentTile, goalTile, previousPathState)
 end
 
 
-local __expandPathState = function(pathState, allStates, openStates)
+local __expandPathState = function(pathState, allStates, openStates, object)
   for _, neighbourTile in ipairs(pathState.currentTile.neighbours4) do
-    if neighbourTile and neighbourTile:canBeEntered() then
+    if neighbourTile and ((neighbourTile.isPathable and neighbourTile:isPathable(object)) or neighbourTile:canBeEntered(object)) then
 
       -- find or create the neighbour state
       local neighbourState = allStates[neighbourTile]
@@ -434,7 +434,7 @@ function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
     end
 
     -- try to expand each neighbour
-    __expandPathState(state, allStates, openStates)
+    __expandPathState(state, allStates, openStates, object)
 
     -- remember to close the state now that all connections have been expanded
     state.closed = true
