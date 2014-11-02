@@ -152,7 +152,7 @@ function RadialMenu:draw(x, y, context)
 	for i, option in ipairs(self.options) do
 		local offset_x, offset_y = option.x*self.__open, option.y*self.__open
 		-- draw the option
-		option:draw(x + offset_x, y + offset_y, (option == selection), self.__open, context)
+		option:draw(x + offset_x, y + offset_y, (option == selection), self.__open, context, x, y)
 	end
 end
 
