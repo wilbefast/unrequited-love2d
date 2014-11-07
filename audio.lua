@@ -82,7 +82,8 @@ function audio:play_sound(name, pitch_shift, x, y, fixed_pitch)
       if not self.mute then
         src:play()
       end
-      return
+      
+      return src
     end
   end
 end
