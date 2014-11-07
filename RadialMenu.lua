@@ -112,10 +112,6 @@ function RadialMenu:setPosition(x, y)
 end
 
 function RadialMenu:getSelection(minimum_value)
-	-- return nothing until open
-	if (not self:isOpened()) then
-		return nil
-	end
 	-- only one option? Then it's always selected
 	if #self.options == 1 then
 		return self.options[1]
