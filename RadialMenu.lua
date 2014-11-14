@@ -146,9 +146,16 @@ function RadialMenu:draw(x, y, context)
 	local selection = self:getSelection()
 	-- draw each options
 	for i, option in ipairs(self.options) do
-		local offset_x, offset_y = option.x*self.__open, option.y*self.__open
-		-- draw the option
-		option:draw(x + offset_x, y + offset_y, (option == selection), self.__open, context, x, y)
+		if option ~= selection then
+			local offset_x, offset_y = option.x*self.__open, option.y*self.__open
+			-- draw the option
+			option:draw(x + offset_x, y + offset_y, false, self.__open, context, x, y)
+		end
+	end
+	if selection then
+		local offset_x, offset_y = selection.x*self.__open, selection.y*self.__open
+		-- draw the selection last so that it is always on top
+		selection:draw(x + offset_x, y + offset_y, true, self.__open, context, x, y)		
 	end
 end
 
