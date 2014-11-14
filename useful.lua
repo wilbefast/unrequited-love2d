@@ -347,29 +347,38 @@ function useful.oval(mode, ox, oy, w, h)
   end
 end
 
-function useful.arc(mode, ox, oy, radius, start_angle, amount)
+function useful.arc(mode, ox, oy, w, h, start_angle, amount)
   if mode == "fill" then mode = __fill
   elseif mode == "line" then mode = __line
+  elseif mode == "dashline" then mode = __dashline
   else
     print("invalid mode '" .. mode .. "' passed to useful.arc")
     return
   end
   if amount < -1 then amount = -1 end
   if amount > 1 then amount = 1 end
-  local angle_step = math.pi/radius
+  local angle_step = math.pi/math.max(w, h)
   local end_angle = start_angle + math.pi*2*amount
 
-
-  local panic = 0
+  local dash = false
 
   local px, py
   for angle = start_angle, end_angle, angle_step do
-    local x, y = ox + math.cos(angle)*radius, oy + math.sin(angle)*radius
+    local x, y = ox + math.cos(angle)*w, oy + math.sin(angle)*h
     if px and py then
       if mode == __fill then
         love.graphics.polygon("fill", ox, oy, px, py, x, y)
       elseif mode == __line then
         love.graphics.line(px, py, x, y)
+      else
+        dash = (not dash)
+        if dash then
+          if mode == __dashfill then
+            love.graphics.polygon("fill", ox, oy, px, py, x, y)
+          elseif mode == __dashline then
+            love.graphics.line(px, py, x, y)
+          end
+        end
       end
     end
     px, py = x, y
