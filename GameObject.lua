@@ -118,30 +118,24 @@ function GameObject.purgeAll()
   __NEXT_ID = 1
 end
 
-function GameObject.updateAll(dt, view)
-  -- oblique viewing angle ?
-  local oblique = (view and view.oblique)
+function GameObject.updateAll(dt)
   -- add new objects
   for _, new_object in pairs(__NEW_INSTANCES) do
     local new_object_layer = (new_object.layer or new_object.y)
-    if oblique then
-      local oi = 1
-      local inserted = false
-      while (not inserted) and (oi <= (#__INSTANCES)) do
-        local object = __INSTANCES[oi]
-        local object_layer = (object.layer or object.y)
-        if (object_layer > new_object_layer) then
-          -- add to the correct position in the list
-          table.insert(__INSTANCES, oi, new_object)
-          inserted = true
-        end
-        oi = oi + 1
+    local oi = 1
+    local inserted = false
+    while (not inserted) and (oi <= (#__INSTANCES)) do
+      local object = __INSTANCES[oi]
+      local object_layer = (object.layer or object.y)
+      if (object_layer > new_object_layer) then
+        -- add to the correct position in the list
+        table.insert(__INSTANCES, oi, new_object)
+        inserted = true
       end
-      if not inserted then
-        -- default (add to the end)
-        table.insert(__INSTANCES, new_object)
-      end
-    else
+      oi = oi + 1
+    end
+    if not inserted then
+      -- default (add to the end)
       table.insert(__INSTANCES, new_object)
     end
   end
