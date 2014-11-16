@@ -23,7 +23,7 @@ LOADING
 --]]--
 
 function audio:load(filename, type)
-  local filepath = ("assets/" .. filename .. ".wav")
+  local filepath = ("assets/" .. filename .. ".ogg")
   return love.audio.newSource(filepath, type)
 end
 
