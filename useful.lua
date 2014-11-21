@@ -408,4 +408,33 @@ function useful.shuffled_ipairs(t, f)
   end
 end
 
+function useful.deck()
+  local cards = {}
+  local discards = {}
+  function draw()
+    if #cards == 0 then
+      cards = discards
+      useful.shuffle(discards)
+      discards = {}
+    end
+    local card = cards[#cards]
+    table.remove(cards)
+    table.insert(discards, card)
+    return card
+  end
+  function shuffle()
+    useful.shuffle(cards)
+  end
+  function stack(card)
+    table.insert(cards, card)
+    shuffle()
+  end
+
+  return {
+    draw = draw,
+    stack = stack,
+    shuffle = shuffle
+  }
+end
+
 return useful

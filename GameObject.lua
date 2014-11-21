@@ -826,7 +826,7 @@ GameObject.DEBUG_VIEW =
         target.x, target.y, target.r)
     elseif target.w and target.h then
       scaling:rectangle("line", 
-        target.x, target.y, target.w, target.h)
+        target.x - target.w*0.5, target.y - target.h*0.5, target.w, target.h)
     end
     
   end
