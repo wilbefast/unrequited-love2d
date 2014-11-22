@@ -30,10 +30,11 @@ RADIALMENU CLASS
 
 local RadialMenu = Class
 {
-	init = function(self, radius)
+	init = function(self, radius, anchor_x, anchor_y)
 		self.__open = 0
 		self.radius = (radius or 48)
 		self.options = {}
+		self.anchor_x, self.anchor_y = anchor_x, anchor_y
 		self.x, self.y = 0, 0
 	end
 }
@@ -111,7 +112,9 @@ function RadialMenu:setPosition(x, y)
 	self.x, self.y = x, y
 end
 
-function RadialMenu:getSelection(minimum_value)
+function RadialMenu:getSelection(minimum_value, x, y)
+	local DERP = x or y
+	x, y = x or self.x, y or self.y
 	-- only one option? Then it's always selected
 	if #self.options == 1 then
 		return self.options[1]
@@ -123,7 +126,8 @@ function RadialMenu:getSelection(minimum_value)
 	-- get the best candidate
 	local best_option, best_value = nil, (minimum_value or 0.5)
 	for i, option in ipairs(self.options) do
-		local value = Vector.dot(self.x, self.y, option.x/self.radius, option.y/self.radius)
+		local value = Vector.dot(x, y, option.x/self.radius, option.y/self.radius)
+		if DERP then log:write(i, value) end
   	if value > best_value then
   		best_option, best_value = option, value
   	end
@@ -138,6 +142,7 @@ Draw
 --]]--
 
 function RadialMenu:draw(x, y, context)
+	x, y = (x or self.anchor_x), (y or self.anchor_y)
 	-- don't draw if closed
 	if self:isClosed() then
 		return
@@ -158,6 +163,22 @@ function RadialMenu:draw(x, y, context)
 		selection:draw(x + offset_x, y + offset_y, true, self.__open, context, x, y)		
 	end
 end
+
+--[[------------------------------------------------------------
+Select with mouse
+--]]--
+
+function RadialMenu:pick(x, y)
+	local dx, dy = x - self.anchor_x, y - self.anchor_y
+	local len2 = Vector.len2(dx, dy)
+	if len2 <= self.radius*self.radius*4 then
+		local len = math.sqrt(len2)
+		return self:getSelection(0.85, dx/len, dy/len)
+	else
+		return nil
+	end
+end
+
 
 
 --[[------------------------------------------------------------
