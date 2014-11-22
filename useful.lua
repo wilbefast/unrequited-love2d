@@ -316,9 +316,9 @@ function useful.oval(mode, ox, oy, w, h)
     return
   end
 
-  if (w == 0) or (h == 0) then
-    print("invalid size " .. w .. "x" .. h .. " passed to useful.oval")
-    print(debug.traceback())
+  if (w <= 0) or (h <= 0) then
+    --print("invalid size " .. w .. "x" .. h .. " passed to useful.oval")
+    --print(debug.traceback())
     return
   end
 
@@ -326,6 +326,7 @@ function useful.oval(mode, ox, oy, w, h)
   local angle_step = math.pi*2/math.min(w, h)
   local px, py
   for angle = 0, math.pi*2 + angle_step, angle_step do
+    angle = math.min(angle, math.pi*2)
     local x, y = ox + math.cos(angle)*w, oy + math.sin(angle)*h
     if px and py then
       if mode == __fill then

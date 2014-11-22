@@ -113,7 +113,6 @@ function RadialMenu:setPosition(x, y)
 end
 
 function RadialMenu:getSelection(minimum_value, x, y)
-	local DERP = x or y
 	x, y = x or self.x, y or self.y
 	-- only one option? Then it's always selected
 	if #self.options == 1 then
@@ -127,7 +126,6 @@ function RadialMenu:getSelection(minimum_value, x, y)
 	local best_option, best_value = nil, (minimum_value or 0.5)
 	for i, option in ipairs(self.options) do
 		local value = Vector.dot(x, y, option.x/self.radius, option.y/self.radius)
-		if DERP then log:write(i, value) end
   	if value > best_value then
   		best_option, best_value = option, value
   	end
