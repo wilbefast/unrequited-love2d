@@ -30,8 +30,10 @@ Initialisation
 
 local CollisionGrid = Class
 {
-  init = function(self, tileClass, tilew, tileh, w, h)
+  init = function(self, tileClass, tilew, tileh, w, h, x, y)
   
+    self.x, self.y = x or 0, y or 0
+
     -- grab the size of the tiles
     self.tilew, self.tileh = tilew, tileh
   
@@ -51,8 +53,8 @@ local CollisionGrid = Class
         local t = tileClass(col, row, self.tilew, self.tileh, self)
         t.col = col
         t.row = row
-        t.x = (col - 1)*tilew
-        t.y = (row - 1)*tileh
+        t.x = self.x + (col - 1)*tilew
+        t.y = self.y + (row - 1)*tileh
         t.w = tilew
         t.h = tileh
         t.grid = self
@@ -109,6 +111,8 @@ function CollisionGrid:toString(tile_tostring)
   local indent, newline = "   ", "\n"
 
   result = result .. "{" .. newline
+    result = result .. indent .. "x = " .. self.x .. "," .. newline
+    result = result .. indent .. "y = " .. self.x .. "," .. newline
     result = result .. indent .. "tilew = " .. self.tilew .. "," .. newline
     result = result .. indent .. "tileh = " .. self.tileh .. "," .. newline
     result = result .. indent .. "w = " .. self.w .. "," .. newline
@@ -262,8 +266,8 @@ function CollisionGrid:gridToTile(col, row, lap_around)
 end
 
 function CollisionGrid:pixelToTile(x, y)
-  return self:gridToTile(math.floor(x / self.tilew) + 1,
-                         math.floor(y / self.tileh) + 1)
+  return self:gridToTile(math.floor((x - self.x) / self.tilew) + 1,
+                         math.floor((y - self.y) / self.tileh) + 1)
 end
 
 function CollisionGrid:centrePixel()
