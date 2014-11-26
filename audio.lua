@@ -15,7 +15,7 @@ Lesser General Public License for more details.
 
 local useful = require("unrequited/useful")
 
-local audio = { }
+local audio = { filenames = {} }
 
 
 --[[---------------------------------------------------------------------------
@@ -36,6 +36,18 @@ function audio:load_sound(filename, volume, n_sources)
     self[filename][i] = new_source
   end
 end
+
+function audio:load_sounds(base_filename, n_files, volume, n_sources)
+  n_sources = (n_sources or 1)
+  local filenames = {}
+  for f = 1, n_files do
+    local name = (base_filename .. "_" .. tostring(f))
+    self:load_sound(name, volume, n_sources)
+    table.insert(filenames, name)
+  end
+  self.filenames[base_filename] = filenames
+end
+
 
 function audio:load_music(filename)
   self[filename] = self:load(filename, "stream")
@@ -63,7 +75,15 @@ function audio:play_music(name, volume, loop)
 end
 
 function audio:play_sound(name, pitch_shift, x, y, fixed_pitch)
-  if not name then return end
+  if not name then 
+    return 
+  end
+
+  if self.filenames[name] then
+    self:play_sound(useful.randIn(self.filenames[name]))
+    return
+  end
+
   for _, src in ipairs(self[name]) do
     if src:isStopped() then
       
