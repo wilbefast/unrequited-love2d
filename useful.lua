@@ -8,7 +8,7 @@ are made available under the terms of the GNU Lesser General Public License
 http://www.gnu.org/licenses/lgpl-2.1.html
 
 This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
+but WITHOUT ANY WARRANTY without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 Lesser General Public License for more details.
 --]]
@@ -437,5 +437,93 @@ function useful.deck()
     shuffle = shuffle
   }
 end
+
+function useful.hsl(hue, saturation, lightness, alpha)
+  alpha = alpha or 255
+  if hue < 0 or hue > 360 then
+      return 0, 0, 0, alpha
+  end
+  if saturation < 0 or saturation > 1 then
+      return 0, 0, 0, alpha
+  end
+  if lightness < 0 or lightness > 1 then
+      return 0, 0, 0, alpha
+  end
+  local chroma = (1 - math.abs(2 * lightness - 1)) * saturation
+  local h = hue/60
+  local x =(1 - math.abs(h % 2 - 1)) * chroma
+  local r, g, b = 0, 0, 0
+  if h < 1 then
+      r,g,b=chroma,x,0
+  elseif h < 2 then
+      r,b,g=x,chroma,0
+  elseif h < 3 then
+      r,g,b=0,chroma,x
+  elseif h < 4 then
+      r,g,b=0,x,chroma
+  elseif h < 5 then
+      r,g,b=x,0,chroma
+  else
+      r,g,b=chroma,0,x
+  end
+  local m = lightness - chroma/2
+  return 255*(r+m), 255*(g+m), 255*(b+m), alpha
+end
+
+function useful.ktemp(temperature)
+
+  temperature = temperature*0.01
+
+  local r, g, b
+
+  if temperature <= 66 then
+    r = 255
+  else
+    r = temperature - 60
+    r = 329.698727466 * math.pow(r, -0.1332047592)
+    if r < 0 then
+      r = 0
+    elseif r > 255 then
+      r = 255
+    end
+  end
+
+  if temperature <= 66 then
+    g = temperature
+    g = 99.4708025861 * math.log(g) - 161.1195681661
+    if g < 0 then
+      g = 0
+    elseif g > 255 then
+      g = 255
+    end
+  else
+    g = temperature - 60
+    g = 288.1221695283 * math.pow(g, -0.0755148492)
+    if g < 0 then
+      g = 0
+    elseif g > 255 then
+      g = 255
+    end
+  end
+
+  if temperature >= 66 then
+    b = 255
+  else
+    if temperature <= 19 then
+      b = 0
+    else
+      b = temperature - 10
+      b = 138.5177312231 * math.log(b) - 305.0447927307 
+      if b < 0 then 
+        b = 0
+      elseif b > 255 then
+        b = 255
+      end
+    end
+  end
+
+  return r, g, b
+end
+
 
 return useful
