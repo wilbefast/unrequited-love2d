@@ -323,7 +323,7 @@ function useful.oval(mode, ox, oy, w, h)
   end
 
   local dash = false
-  local angle_step = math.pi*2/math.min(w, h)
+  local angle_step = math.pi*2/math.min(w, h)/2
   local px, py
   for angle = 0, math.pi*2 + angle_step, angle_step do
     angle = math.min(angle, math.pi*2)
