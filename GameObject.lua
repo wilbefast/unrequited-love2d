@@ -484,6 +484,23 @@ function GameObject.getNearestOfType(typename, x, y, suchThat)
   return nearest, nearest_distance2
 end
 
+function GameObject.getNearestToCollideOfType(typename, x, y, suchThat)
+  local t = __TYPE[typename]
+  local nearest, nearest_distance = nil, math.huge
+  for i, object in ipairs(__INSTANCES) do
+    if not object.purge and (object.type == t) then
+      if (not suchThat) or suchThat(object) then
+        local toMe_x, toMe_y, dist = Vector.normalize(x - object.x, y - object.y)
+        dist = dist - (object.r or object.w or 0)
+        if dist < nearest_distance then
+          nearest, nearest_distance = object, dist
+        end
+      end
+    end
+  end
+  return nearest, nearest_distance
+end
+
 function GameObject.getFurthestOfType(typename, x, y, suchThat)
   local t = __TYPE[typename]
   local furthest, furthest_distance2 = nil, math.huge
