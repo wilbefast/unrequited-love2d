@@ -317,8 +317,8 @@ function useful.oval(mode, ox, oy, w, h)
   end
 
   if (w <= 0) or (h <= 0) then
-    --print("invalid size " .. w .. "x" .. h .. " passed to useful.oval")
-    --print(debug.traceback())
+    print("invalid size " .. w .. "x" .. h .. " passed to useful.oval")
+    print(debug.traceback())
     return
   end
 
