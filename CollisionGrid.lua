@@ -416,6 +416,10 @@ function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
 
   local startTile = self:gridToTile(startcol, startrow)
   local endTile = self:gridToTile(endcol, endrow)
+  if not startTile or not endTile then
+    return {}
+  end
+
   local startState = __createPathState(startTile, endTile)
 
   local openStates = { startState }
@@ -466,13 +470,12 @@ function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
 end
 
 function CollisionGrid:pixelPath(startx, starty, endx, endy, object)
-  local startcol, startrow = self:pixelToGrid(startx, starty)
-  local endcol, endrow = self:pixelToGrid(endx, endy)
   local gridPath = self:gridPath(startcol, startrow, endcol, endrow, object)
   local pixelPath = {}
   for _, tile in ipairs(gridPath) do
     table.insert(pixelPath, { x = tile.x + tile.w*0.5, y = tile.y + tile.h*0.5 })
   end
+
   return pixelPath
 end
 
