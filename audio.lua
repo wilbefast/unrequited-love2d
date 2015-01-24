@@ -23,7 +23,7 @@ LOADING
 --]]--
 
 function audio:load(filename, type)
-  local filepath = ("assets/audio/" .. filename .. ".ogg")
+  local filepath = ("assets/audio/" .. filename)
   return love.audio.newSource(filepath, type)
 end
 
@@ -31,7 +31,7 @@ function audio:load_sound(filename, volume, n_sources)
   n_sources = (n_sources or 1)
   self[filename] = {}
   for i = 1, n_sources do 
-    local new_source = self:load(filename, "static") 
+    local new_source = self:load(filename .. ".wav", "static") 
     new_source:setVolume(volume or 1)
     self[filename][i] = new_source
   end
@@ -50,7 +50,7 @@ end
 
 
 function audio:load_music(filename)
-  self[filename] = self:load(filename, "stream")
+  self[filename] = self:load(filename .. ".ogg", "stream")
 end
 
 
@@ -59,8 +59,10 @@ PLAYING
 --]]--
 
 function audio:play_music(name, volume, loop)
+
   if loop == nil then loop = true end
   local new_music = self[name]
+  
   if new_music ~= self.music then
     if self.music then
       self.music:stop()
