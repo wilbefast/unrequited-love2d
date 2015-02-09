@@ -470,6 +470,8 @@ function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
 end
 
 function CollisionGrid:pixelPath(startx, starty, endx, endy, object)
+  local startcol, startrow = self:pixelToGrid(startx, starty)
+  local endcol, endrow = self:pixelToGrid(endx, endy)
   local gridPath = self:gridPath(startcol, startrow, endcol, endrow, object)
   local pixelPath = {}
   for _, tile in ipairs(gridPath) do
