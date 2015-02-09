@@ -653,15 +653,23 @@ Snap
 --]]--
 
 function  GameObject:snapInsideBoundary(bx, by, bw, bh)
-  if self.r then
-    self.x = math.max(bx + self.r, math.min(self.x, bx + bw - self.r))
-    self.y = math.max(by + self.r, math.min(self.y, by + bh - self.r))
-  elseif self.w and self.h then
-    self.x = math.max(bx + self.w*0.5, math.min(self.x, bx + bw - self.w*0.5))
-    self.y = math.max(by + self.h*0.5, math.min(self.y, by + bh - self.h*0.5))
-  else
-    self.x = math.max(bx, math.min(bx + bw))
-    self.y = math.max(by, math.min(by + bh))
+  local w, h = self.r or self.w*0.5 or 0, self.r or self.w*0.5 or 0
+  self.x = math.max(bx + w, math.min(self.x, bx + bw - w))
+  self.y = math.max(by + h, math.min(self.y, by + bh - h))
+end
+
+function  GameObject:isInsideBoundary(bx, by, bw, bh)
+  local w, h = self.r or self.w*0.5 or 0, self.r or self.w*0.5 or 0
+  if self.x + w > bx + bw then 
+    return false
+  elseif self.x - w < bx then 
+    return false
+  elseif self.y + h > by + bh then 
+    return false
+  elseif self.y - h > by then 
+    return false
+  else 
+    return true 
   end
 end
 
