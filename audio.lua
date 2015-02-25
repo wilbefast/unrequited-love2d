@@ -66,7 +66,7 @@ function audio:play_music(name, volume, loop)
       self.music:stop()
     end
     new_music:setLooping(loop)
-    if not self.mute then
+    if not self.mute and not self.mute_music then
       new_music:setVolume(volume or 1)
       new_music:play()
     end
@@ -99,7 +99,7 @@ function audio:play_sound(name, pitch_shift, x, y, fixed_pitch)
         src:setPosition(x, y, 0)
       end
       
-      if not self.mute then
+      if not self.mute and not self.mute_sound then
         src:play()
       end
       
