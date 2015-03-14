@@ -31,6 +31,11 @@ log.cycle_i = 1
 log.font = love.graphics.newFont(14)
 
 function log:write(...)
+	-- also print
+	if self.print then
+		print(...)
+	end
+
 	-- build the new log
 	local args = useful.packArgs(...)
 	local message = nil
