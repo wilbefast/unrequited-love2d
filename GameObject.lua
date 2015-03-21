@@ -32,7 +32,9 @@ Initialisation
 --]]
 
 -- container
-local __INSTANCES = { }
+local __UPDATE_LIST = { }
+local __DRAW_LIST = { }
+local __COLLISION_LIST = { }
 local __NEW_INSTANCES = { }
     
 -- identifiers
@@ -105,7 +107,7 @@ Modification
 --]]--
 
 function GameObject.purgeAll()
-	useful.map(__INSTANCES, 
+	useful.map(__UPDATE_LIST, 
 		function(object)
 			object.purge = true
 		end)
@@ -113,7 +115,9 @@ function GameObject.purgeAll()
     function(object)
       object.purge = true
     end)
-  __INSTANCES = {}
+  __UPDATE_LIST = {}
+  __COLLISION_LIST = {}
+  __DRAW_LIST = {}
   __NEW_INSTANCES = {}
   __NEXT_ID = 1
 end
@@ -123,57 +127,82 @@ function GameObject.updateAll(dt, view)
   local oblique = (view and view.oblique)
   -- add new objects
   for _, new_object in pairs(__NEW_INSTANCES) do
-    local new_object_layer = (new_object.layer or new_object.y)
-    if oblique then
-      local oi = 1
-      local inserted = false
-      while (not inserted) and (oi <= (#__INSTANCES)) do
-        local object = __INSTANCES[oi]
-        local object_layer = (object.layer or object.y)
-        if (object_layer > new_object_layer) then
-          -- add to the correct position in the list
-          table.insert(__INSTANCES, oi, new_object)
-          inserted = true
-        end
-        oi = oi + 1
-      end
-      if not inserted then
-        -- default (add to the end)
-        table.insert(__INSTANCES, new_object)
-      end
-    else
-      table.insert(__INSTANCES, new_object)
-    end
+
+  	-- add to update list
+    table.insert(__UPDATE_LIST, new_object)
+
+   	-- add to draw list
+   	if new_object.draw then
+	    if oblique then
+	    	local new_object_layer = (new_object.layer or new_object.y)
+	      local oi = 1
+	      local inserted = false
+	      while (not inserted) and (oi <= (#__DRAW_LIST)) do
+	        local object = __DRAW_LIST[oi]
+	        local object_layer = (object.layer or object.y)
+	        if (object_layer > new_object_layer) then
+	          -- add to the correct position in the list
+	          table.insert(__DRAW_LIST, oi, new_object)
+	          inserted = true
+	        end
+	        oi = oi + 1
+	      end
+	      if not inserted then
+	        -- default (add to the end)
+	        table.insert(__DRAW_LIST, new_object)
+	      end
+	    end
+   	end
+
+   	-- add to collision list
+   	local _nullf = (function() end)
+   	if 
+   		(new_object.w and new_object.h)
+	   	or new_object.r 
+	   	or new_object.eventCollision 
+   	then
+   		table.insert(__COLLISION_LIST, new_object)
+   		if not new_object.eventCollision then
+   			new_object.eventCollision = _nullf
+   		end
+   	end
+
   end
   __NEW_INSTANCES = { }
 
   -- update objects
   -- ...for each object
-  useful.map(__INSTANCES,
+  useful.map(__UPDATE_LIST,
     function(object)
       -- ...update the object
       object:update(dt, level, view)
-      -- ...check collisions with other objects
-      useful.map(__INSTANCES,
-          function(otherobject)
-            -- check collisions between objects
-            if object:isColliding(otherobject) then
-              object:eventCollision(otherobject, dt)
-            end
-          end) 
   end)
 
+  -- calculate collisions
+  useful.map(__COLLISION_LIST,
+  	function(object)
+	    -- ...check collisions with other objects
+	    useful.map(__COLLISION_LIST,
+        function(otherobject)
+          -- check collisions between objects
+          if object:isColliding(otherobject) then
+            object:eventCollision(otherobject, dt)
+          end
+      	end)
+	  end)
+
+  -- resort draw list
 	if oblique then
   	local oi = 1
-  	while oi <= (#__INSTANCES) do
-    	local obj = __INSTANCES[oi]
+  	while oi <= (#__DRAW_LIST) do
+    	local obj = __DRAW_LIST[oi]
       local obj_layer = (obj.layer or obj.y)
     	if oi > 1 then
-      	local prev = __INSTANCES[oi-1]
+      	local prev = __DRAW_LIST[oi-1]
         local prev_layer = (prev.layer or prev.y)
       	if (prev_layer > obj_layer) then
-        	__INSTANCES[oi] = prev
-        	__INSTANCES[oi - 1] = obj
+        	__DRAW_LIST[oi] = prev
+        	__DRAW_LIST[oi - 1] = obj
       	end
     	end
     	oi = oi + 1
@@ -185,7 +214,7 @@ function GameObject.drawAll(view)
   -- oblique viewing angle ?
   local oblique = (view and view.oblique) or 1
 	-- for each object
-  useful.map(__INSTANCES,
+  useful.map(__DRAW_LIST,
     function(object)
       -- if the object is in view...
       if not object.purge and ((not view) or (not (view.x and view.y and view.w and view.h)) or object:isColliding(view)) then
@@ -196,7 +225,7 @@ function GameObject.drawAll(view)
 end
 
 function GameObject.mapToAll(f, suchThat)
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and ((not suchThat) or suchThat(object)) then
       f(object, i)
     end
@@ -205,7 +234,7 @@ end
 
 function GameObject.mapToType(typename, f, suchThat)
   local t = __TYPE[typename]
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and (object.type == t) then
       if (not suchThat) or suchThat(object) then
         f(object, i)
@@ -215,9 +244,9 @@ function GameObject.mapToType(typename, f, suchThat)
 end
 
 function GameObject.mapToPair(f)
-  for i = 1, #__INSTANCES do
-    for j = i+1, (#__INSTANCES)-1 do
-      local object1, object2 = __INSTANCES[i], __INSTANCES[j]
+  for i = 1, #__UPDATE_LIST do
+    for j = i+1, (#__UPDATE_LIST)-1 do
+      local object1, object2 = __UPDATE_LIST[i], __UPDATE_LIST[j]
       if( not object1.purge) and (not object2.purge) then
         f(i, j)
       end
@@ -227,11 +256,11 @@ end
 
 function GameObject.mapToTypePair(typename1, typename2, f)
   local t1, t2 = __TYPE[typename1], __TYPE[typename2]
-  for i = 1, #__INSTANCES do
-    local object1 = __INSTANCES[i]
+  for i = 1, #__UPDATE_LIST do
+    local object1 = __UPDATE_LIST[i]
     if not object1.purge and (object1.type == t1) then
-      for j = i+1, (#__INSTANCES) do
-        local object2 = __INSTANCES[j]
+      for j = i+1, (#__UPDATE_LIST) do
+        local object2 = __UPDATE_LIST[j]
         if not object2.purge and (object2.type == t2) then
           f(object1, object2)
         end
@@ -242,7 +271,7 @@ end
 
 function GameObject.mapWithinRadius(x, y, radius, f, suchThat)
   local radius2 = radius*radius
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and ((not suchThat) or suchThat(object)) then
       local distance2 = vector.dist2(x, y, object.x, object.y)
       if distance2 <= radius2 then
@@ -255,7 +284,7 @@ end
 function GameObject.mapToTypeWithinRadius(typename, x, y, radius, f, suchThat)
   local t = __TYPE[typename]
   local radius2 = radius*radius
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if  not object.purge and (object.type == t) then
       if (not suchThat) or suchThat(object) then
         local distance2 = vector.dist2(x, y, object.x, object.y)
@@ -278,7 +307,7 @@ count
 
 function GameObject.countSuchThat(predicate)
   local count = 0
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if  not object.purge and predicate(object) then
       count = count + 1 
     end
@@ -289,7 +318,7 @@ end
 function GameObject.countOfTypeSuchThat(typename, predicate)
   local t = __TYPE[typename]
   local count = 0
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and (object.type == t) and ((not predicate) or predicate(object)) then
       count = count + 1 
     end
@@ -302,7 +331,7 @@ check predicate
 --]]--
 
 function GameObject.trueForAny(predicate)
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and not predicate(object) then
       return true
     end
@@ -312,7 +341,7 @@ end
 
 function GameObject.trueForAnyOfType(typename, predicate)
   local t = __TYPE[typename]
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if  not object.purge and (object.type == t) and predicate(object) then
       return true
     end
@@ -321,7 +350,7 @@ function GameObject.trueForAnyOfType(typename, predicate)
 end
 
 function GameObject.trueForAll(predicate)
-	for i, object in ipairs(__INSTANCES) do
+	for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and not predicate(object) then
       return false
     end
@@ -331,7 +360,7 @@ end
 
 function GameObject.trueForAllOfType(typename, predicate)
   local t = __TYPE[typename]
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and (object.type == t) and (not predicate(object)) then
       return false
     end
@@ -350,7 +379,7 @@ function GameObject.getObjectOfType(typename, index)
   end
   local count = 0
   local t = __TYPE[typename]
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if  not object.purge and (object.type == t) then
       count = count + 1
       if count == index then
@@ -362,7 +391,7 @@ function GameObject.getObjectOfType(typename, index)
 end
 
 function GameObject.getFirstSuchThat(predicate)
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and predicate(object) then
       return object
     end
@@ -372,7 +401,7 @@ end
 
 function GameObject.getFirstOfTypeSuchThat(typename, predicate)
   local t = __TYPE[typename]
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and (object.type == t) and predicate(object) then
       return object
     end
@@ -386,7 +415,7 @@ find min/max
 
 function GameObject.getMost(evaluator)
   local best, best_value = nil, -math.huge
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     local value = evaluator(object)
     if not object.purge then
       if value > best_value then
@@ -400,7 +429,7 @@ end
 function GameObject.getMostOfType(typename, evaluator)
   local t = __TYPE[typename]
   local best, best_value = nil, -math.huge
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and (object.type == t) then
       local value = evaluator(object)
       if value > best_value then
@@ -413,7 +442,7 @@ end
 
 function GameObject.getLeast(evaluator)
   local best, best_value = nil, math.huge
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge then
       local value = evaluator(object)
       if value < best_value then
@@ -427,7 +456,7 @@ end
 function GameObject.getLeastOfType(typename, evaluator)
   local t = __TYPE[typename]
   local best, best_value = nil, math.huge
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and (object.type == t) then
       local value = evaluator(object)
       if value < best_value then
@@ -444,7 +473,7 @@ find nearest/furthest
 
 function GameObject.getNearest(x, y, suchThat)
   local nearest, nearest_distance2 = nil, math.huge
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and ((not suchThat) or suchThat(object)) then
       local distance2 = vector.dist2(x, y, object.x, object.y)
       if distance2 < nearest_distance2 then
@@ -457,7 +486,7 @@ end
 
 function GameObject.getFurthest(x, y, suchThat)
   local furthest, furthest_distance2 = nil, math.huge
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and ((not suchThat) or suchThat(object)) then
       local distance2 = vector.dist2(x, y, object.x, object.y)
       if distance2 > nearest_distance2 then
@@ -471,7 +500,7 @@ end
 function GameObject.getNearestOfType(typename, x, y, suchThat)
   local t = __TYPE[typename]
   local nearest, nearest_distance2 = nil, math.huge
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and (object.type == t) then
       if (not suchThat) or suchThat(object) then
         local distance2 = vector.dist2(x, y, object.x, object.y)
@@ -487,7 +516,7 @@ end
 function GameObject.getNearestToCollideOfType(typename, x, y, suchThat)
   local t = __TYPE[typename]
   local nearest, nearest_distance = nil, math.huge
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and (object.type == t) then
       if (not suchThat) or suchThat(object) then
         local toMe_x, toMe_y, dist = Vector.normalize(x - object.x, y - object.y)
@@ -504,7 +533,7 @@ end
 function GameObject.getFurthestOfType(typename, x, y, suchThat)
   local t = __TYPE[typename]
   local furthest, furthest_distance2 = nil, math.huge
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and (object.type == t) then
       if (not suchThat) or suchThat(object) then
         local distance2 = vector.dist2(x, y, object.x, object.y)
@@ -559,10 +588,6 @@ function GameObject:snap_to_collision(dx, dy, collisiongrid, max, type)
     self.y = self.y + dy
     i = i + 1
   end
-end
-
-function GameObject:eventCollision(other, dt)
-  -- override me!
 end
 
 function GameObject:isColliding(other)
@@ -620,7 +645,7 @@ collision queries
 --]]--
 
 function  GameObject.lineCast(x1, y1, x2, y2, f)
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge then
       if object.r then
         if useful.lineCircleCollision(x1, y1, x2, y2, object.x, object.y, object.r) then
@@ -635,7 +660,7 @@ end
 
 function  GameObject.lineCastForType(typename, x1, y1, x2, y2, f)
   local t = __TYPE[typename]
-  for i, object in ipairs(__INSTANCES) do
+  for i, object in ipairs(__UPDATE_LIST) do
     if (object.type == t) and (not object.purge) then
       if object.r then
         if useful.lineCircleCollision(x1, y1, x2, y2, object.x, object.y, object.r) then
@@ -837,7 +862,7 @@ function GameObject:update(dt)
   end
 end
 
-function GameObject:draw()
+function GameObject:debugDraw()
   if DEBUG then
     self.DEBUG_VIEW:draw(self)
   end
