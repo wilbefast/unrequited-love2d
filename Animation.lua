@@ -36,7 +36,7 @@ local Animation = Class
   
     if type(img) == "table" then
       if not fudge then
-        fudge = require("fudge/src/fudge")
+        fudge = require("fudge")
       end
       self.fudge = img
       img = self.fudge.img
