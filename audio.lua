@@ -22,35 +22,46 @@ local audio = { filenames = {} }
 LOADING
 --]]--
 
-function audio:load(filename, type)
-  local filepath = ("assets/audio/" .. filename .. ".ogg")
+local _getFilename = function(filepath)
+  local last_slash = string.find(filepath, "/[^/]*$")
+  if last_slash then
+  	return (string.sub(filepath, last_slash + 1) or filepath)
+  else
+  	return filepath
+  end
+end
+
+function audio:load(filepath, type)
+  local filepath = ("assets/audio/" .. filepath .. ".ogg")
   return love.audio.newSource(filepath, type)
 end
 
-function audio:load_sound(filename, volume, n_sources)
+function audio:load_sound(filepath, volume, n_sources)
   n_sources = (n_sources or 1)
+  local filename = _getFilename(filepath)
   self[filename] = {}
   for i = 1, n_sources do 
-    local new_source = self:load(filename, "static") 
+    local new_source = self:load(filepath, "static") 
     new_source:setVolume(volume or 1)
     self[filename][i] = new_source
   end
 end
 
-function audio:load_sounds(base_filename, n_files, volume, n_sources)
+function audio:load_sounds(base_filepath, n_files, volume, n_sources)
   n_sources = (n_sources or 1)
+  local base_filename = _getFilename(base_filepath)
   local filenames = {}
   for f = 1, n_files do
-    local name = (base_filename .. "_" .. tostring(f))
-    self:load_sound(name, volume, n_sources)
-    table.insert(filenames, name)
+    local filepath = (base_filepath .. "_" .. tostring(f))
+    self:load_sound(filepath, volume, n_sources)
+    table.insert(filenames, _getFilename(filepath))
   end
   self.filenames[base_filename] = filenames
 end
 
 
-function audio:load_music(filename)
-  self[filename] = self:load(filename, "stream")
+function audio:load_music(filepath)
+  self[_getFilename(filepath)] = self:load(filepath, "stream")
 end
 
 
