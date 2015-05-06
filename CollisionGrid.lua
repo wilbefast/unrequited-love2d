@@ -165,6 +165,16 @@ function CollisionGrid:loadFromFile(filename, tileClass)
   self:loadFromObject(fimport())
 end
 
+function CollisionGrid:loadFromImage(filename, tileClass)
+  local img = love.image.newImageData(filename)
+  self:init(tileClass, tileClass.w, tileClass.h, img:getWidth(), img:getHeight())
+  for col = 0, self.w - 1 do
+    for row = 0, self.h - 1 do
+      self.tiles[col + 1][row + 1]:importPixel(img:getPixel(col, row))
+    end
+  end
+end
+
 
 --[[----------------------------------------------------------------------------
 Tile neighbours
