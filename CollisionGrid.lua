@@ -87,8 +87,14 @@ Map functions to all or part of the grid
 function CollisionGrid:mapRectangle(startCol, startRow, w, h, f)
   for col = startCol, startCol + w - 1 do
     for row = startRow, startRow + h - 1 do
+    	local val
       if self:validGridPos(col, row) then
-        f(self.tiles[col][row], col, row)
+        val = f(self.tiles[col][row], col, row)
+      else
+      	val = f(nil, col, row)
+      end
+      if val then
+      	return val
       end
     end
   end
