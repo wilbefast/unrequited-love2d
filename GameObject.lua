@@ -102,6 +102,32 @@ end
 CONTAINER
 --]]------------------------------------------------------------
 
+--[[----------------------------------------------------------------------------
+Load from file
+--]]--
+
+function GameObject.loadFromObject(lua)
+	for typename, instances in pairs(lua.objects) do
+		local ftypeObject = loadstring("return " .. typename)
+		if ftypeObject then
+			local typeObject = ftypeObject()
+			if typeObject and typeObject.loadFromObject then
+				for _, parameters in ipairs(instances) do
+					typeObject.loadFromObject(parameters)
+				end
+			end
+		end
+	end 
+end
+
+function GameObject.loadFromFile(filename)
+  local fimport, err = love.filesystem.load( filename )
+  if err then 
+    return err 
+  end
+  GameObject.loadFromObject(fimport())
+end
+
 --[[------------------------------------------------------------
 Modification
 --]]--
