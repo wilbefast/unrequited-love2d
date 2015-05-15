@@ -17,6 +17,9 @@ local useful = require("unrequited/useful")
 
 local audio = { filenames = {} }
 
+local _music_base_volume = 1
+local _sound_base_volume = 1
+
 
 --[[---------------------------------------------------------------------------
 LOADING
@@ -70,6 +73,9 @@ PLAYING
 --]]--
 
 function audio:play_music(name, volume, loop)
+	if volume then
+		_music_base_volume = volume
+	end
   if loop == nil then loop = true end
   local new_music = self[name]
   if new_music ~= self.music then
@@ -78,7 +84,7 @@ function audio:play_music(name, volume, loop)
     end
     new_music:setLooping(loop)
     if not self.mute and not self.mute_music then
-      new_music:setVolume(volume or 1)
+      new_music:setVolume((volume or 1))
       new_music:play()
     end
     self.music = new_music
@@ -112,6 +118,7 @@ function audio:play_sound(name, pitch_shift, x, y, fixed_pitch)
       
       if not self.mute and not self.mute_sound then
         src:play()
+        src:setVolume(src:getVolume() * _sound_base_volume)
       end
       
       return src
@@ -121,8 +128,18 @@ end
 
 
 --[[---------------------------------------------------------------------------
-MUTE
+VOLUME
 --]]--
+
+function audio:set_sound_volume(v)
+	_sound_base_volume = v
+end
+
+function audio:set_music_volume(v)
+	if self.music then
+		self.music:setVolume(v * _music_base_volume)
+	end
+end
 
 function audio:toggle_music()
   if not self.music then
