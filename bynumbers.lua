@@ -50,7 +50,13 @@ local _addPalette = function(path)
 end
 
 
-local _paint = function(images)
+local _paint = function(args)
+	local images = args.images or args
+	local fail_r = args.fail_r
+	local fail_g = args.fail_g
+	local fail_b = args.fail_b
+	local fail_a = args.fail_a
+	local log = args.log
 	local exists = {}
 	for palette_name, palette in pairs(_palettes) do
 		for _, image in ipairs(images) do
@@ -60,6 +66,9 @@ local _paint = function(images)
 					if (other_palette ~= palette) then
 						local new_image_name = string.gsub(image.name, palette_name, other_palette_name)
 						if not exists[new_image_name] then
+							if log then
+								log:write("generating", new_image_name)
+							end
 							local w, h = image.tex:getDimensions()
 							local new_image_data = love.image.newImageData(w, h)
 							new_image_data:paste(image.tex:getData(), 0, 0, 0, 0, w, h)
@@ -70,11 +79,11 @@ local _paint = function(images)
 									local hash = _colourToString(r, g, b, a)
 									local index = palette[hash]
 									if not index then
-										return 255, 0, 255, 255
+										return fail_r or r, fail_g or g, fail_b or b, fail_a or a
 									end
 									local other_hash = other_palette[index]
 									if not other_hash then
-										return 255, 0, 255, 255
+										return fail_r or r, fail_g or g, fail_b or b, fail_a or a
 									end
 									return _stringToColour(other_hash)
 								end
