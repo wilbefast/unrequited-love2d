@@ -133,6 +133,7 @@ Modification
 --]]--
 
 function GameObject.purgeAll()
+  log:write("PURGED ALL")
 	useful.map(__UPDATE_LIST, 
 		function(object)
 			object.purge = true
@@ -148,53 +149,57 @@ function GameObject.purgeAll()
   __NEXT_ID = 1
 end
 
+function GameObject.flushCreatedObjects(oblique)
+  for _, new_object in pairs(__NEW_INSTANCES) do
+
+    -- add to update list
+    table.insert(__UPDATE_LIST, new_object)
+
+    -- add to draw list
+    if new_object.draw then
+      if oblique then
+        local new_object_layer = (new_object.layer or new_object.y)
+        local oi = 1
+        local inserted = false
+        while (not inserted) and (oi <= (#__DRAW_LIST)) do
+          local object = __DRAW_LIST[oi]
+          local object_layer = (object.layer or object.y)
+          if (object_layer > new_object_layer) then
+            -- add to the correct position in the list
+            table.insert(__DRAW_LIST, oi, new_object)
+            inserted = true
+          end
+          oi = oi + 1
+        end
+        if not inserted then
+          -- default (add to the end)
+          table.insert(__DRAW_LIST, new_object)
+        end
+      end
+    end
+
+    -- add to collision list
+    local _nullf = (function() end)
+    if 
+      (new_object.w and new_object.h)
+      or new_object.r 
+      or new_object.eventCollision 
+    then
+      table.insert(__COLLISION_LIST, new_object)
+      if not new_object.eventCollision then
+        new_object.eventCollision = _nullf
+      end
+    end
+
+  end
+  __NEW_INSTANCES = { }
+end
+
 function GameObject.updateAll(dt, view)
   -- oblique viewing angle ?
   local oblique = (view and view.oblique)
   -- add new objects
-  for _, new_object in pairs(__NEW_INSTANCES) do
-
-  	-- add to update list
-    table.insert(__UPDATE_LIST, new_object)
-
-   	-- add to draw list
-   	if new_object.draw then
-	    if oblique then
-	    	local new_object_layer = (new_object.layer or new_object.y)
-	      local oi = 1
-	      local inserted = false
-	      while (not inserted) and (oi <= (#__DRAW_LIST)) do
-	        local object = __DRAW_LIST[oi]
-	        local object_layer = (object.layer or object.y)
-	        if (object_layer > new_object_layer) then
-	          -- add to the correct position in the list
-	          table.insert(__DRAW_LIST, oi, new_object)
-	          inserted = true
-	        end
-	        oi = oi + 1
-	      end
-	      if not inserted then
-	        -- default (add to the end)
-	        table.insert(__DRAW_LIST, new_object)
-	      end
-	    end
-   	end
-
-   	-- add to collision list
-   	local _nullf = (function() end)
-   	if 
-   		(new_object.w and new_object.h)
-	   	or new_object.r 
-	   	or new_object.eventCollision 
-   	then
-   		table.insert(__COLLISION_LIST, new_object)
-   		if not new_object.eventCollision then
-   			new_object.eventCollision = _nullf
-   		end
-   	end
-
-  end
-  __NEW_INSTANCES = { }
+  GameObject.flushCreatedObjects(oblique)
 
   -- update objects
   -- ...for each object
@@ -671,7 +676,7 @@ collision queries
 --]]--
 
 function  GameObject.lineCast(x1, y1, x2, y2, f)
-  for i, object in ipairs(__UPDATE_LIST) do
+  for i, object in ipairs(__COLLISION_LIST) do
     if not object.purge then
       if object.r then
         if useful.lineCircleCollision(x1, y1, x2, y2, object.x, object.y, object.r) then
@@ -686,7 +691,7 @@ end
 
 function  GameObject.lineCastForType(typename, x1, y1, x2, y2, f)
   local t = __TYPE[typename]
-  for i, object in ipairs(__UPDATE_LIST) do
+  for i, object in ipairs(__COLLISION_LIST) do
     if (object.type == t) and (not object.purge) then
       if object.r then
         if useful.lineCircleCollision(x1, y1, x2, y2, object.x, object.y, object.r) then
