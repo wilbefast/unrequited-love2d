@@ -157,24 +157,22 @@ function GameObject.flushCreatedObjects(oblique)
 
     -- add to draw list
     if new_object.draw then
-      if oblique then
-        local new_object_layer = (new_object.layer or new_object.y)
-        local oi = 1
-        local inserted = false
-        while (not inserted) and (oi <= (#__DRAW_LIST)) do
-          local object = __DRAW_LIST[oi]
-          local object_layer = (object.layer or object.y)
-          if (object_layer > new_object_layer) then
-            -- add to the correct position in the list
-            table.insert(__DRAW_LIST, oi, new_object)
-            inserted = true
-          end
-          oi = oi + 1
+      local inserted = false
+      local new_object_layer = (new_object.layer or (oblique and new_object.y) or 0)
+      local oi = 1
+      while (not inserted) and (oi <= (#__DRAW_LIST)) do
+        local object = __DRAW_LIST[oi]
+        local object_layer = (object.layer or (oblique and object.y) or 0)
+        if (object_layer > new_object_layer) then
+          -- add to the correct position in the list
+          table.insert(__DRAW_LIST, oi, new_object)
+          inserted = true
         end
-        if not inserted then
-          -- default (add to the end)
-          table.insert(__DRAW_LIST, new_object)
-        end
+        oi = oi + 1
+      end
+      if not inserted then
+        -- default (add to the end)
+        table.insert(__DRAW_LIST, new_object)
       end
     end
 
@@ -612,6 +610,9 @@ function GameObject:snap_from_collision(dx, dy, collisiongrid, max, type)
 end
 
 function GameObject:snap_to_collision(dx, dy, collisiongrid, max, type)
+  if dx == 0 and dy == 0 then
+    return
+  end
   local i = 0
   while not collisiongrid:objectCollision(self, self.x + dx, self.y + dy, type) 
         and (not max or i < max)  do
