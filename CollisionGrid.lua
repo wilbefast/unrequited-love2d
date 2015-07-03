@@ -376,12 +376,12 @@ local __estimatePathCost = function(startTile, endTile)
   return Vector.len(startTile.col, startTile.row, endTile.col, endTile.row)
 end
 
-local __setPathStatePrevious = function(pathState, previousPathState)
+local __setPathStatePrevious = function(pathState, previousPathState, cost)
   pathState.previousPathState = previousPathState
-  pathState.currentCost = previousPathState.currentCost + 1
+  pathState.currentCost = previousPathState.currentCost + (cost or 1)
 end
 
-local __createPathState = function(currentTile, goalTile, previousPathState)
+local __createPathState = function(currentTile, goalTile, previousPathState, cost)
   local pathState = {
     currentTile = currentTile,
     goalTile = goalTile,
@@ -389,7 +389,7 @@ local __createPathState = function(currentTile, goalTile, previousPathState)
     closed = false,
   }
   if previousPathState then
-    __setPathStatePrevious(pathState, previousPathState)
+    __setPathStatePrevious(pathState, previousPathState, cost)
   else
     pathState.currentCost = 0
   end
@@ -400,32 +400,52 @@ end
 
 
 local __expandPathState = function(pathState, allStates, openStates, object)
-  for _, neighbourTile in ipairs(pathState.currentTile.neighbours4) do
-    if neighbourTile and ((neighbourTile.isPathable and neighbourTile:isPathable(object)) or neighbourTile:canBeEntered(object)) then
 
-      -- find or create the neighbour state
-      local neighbourState = allStates[neighbourTile]
-      if not neighbourState then
-        neighbourState = __createPathState(neighbourTile, pathState.goalTile, pathState)
-        allStates[neighbourTile] = neighbourState
-      end
+  local ___canExpandTo = function(t)
+    return (t and ((t.isPathable and t:isPathable(object)) or t:canBeEntered(object)))
+  end
 
-      -- do nothing if the state is closed
-      if not neighbourState.closed then
-        if not neighbourState.opened then
-          -- always open states that have not yet been opened and create a link
+  local ___expandTo = function(t, cost)
+    if not ___canExpandTo(t) then
+      return
+    end
+
+    -- find or create the neighbour state
+    local neighbourState = allStates[t]
+    if not neighbourState then
+      neighbourState = __createPathState(t, pathState.goalTile, pathState, cost)
+      allStates[t] = neighbourState
+    end
+
+    -- do nothing if the state is closed
+    if not neighbourState.closed then
+      if not neighbourState.opened then
+        -- always open states that have not yet been opened and create a link
+        __setPathStatePrevious(neighbourState, pathState)
+        neighbourState.opened = true
+        table.insert(openStates, neighbourState)
+      else
+        -- create a link with already open states provided the cost would be improved
+        if pathState.currentCost < neighbourState.currentCost then
           __setPathStatePrevious(neighbourState, pathState)
-          neighbourState.opened = true
-          table.insert(openStates, neighbourState)
-        else
-          -- create a link with already open states provided the cost would be improved
-          if pathState.currentCost < neighbourState.currentCost then
-            __setPathStatePrevious(neighbourState, pathState)
-          end
         end
       end
     end
   end
+
+  local curr = pathState.currentTile
+
+  -- adjascent
+  for _, neighbourTile in ipairs(curr.neighbours4) do
+    ___expandTo(neighbourTile, 1)
+  end
+
+  -- diagonals
+  local N, S, E, W = ___canExpandTo(curr.N), ___canExpandTo(curr.S), ___canExpandTo(curr.E), ___canExpandTo(curr.W)
+  if N and E then ___expandTo(curr.NE, 1.414) end
+  if S and E then ___expandTo(curr.SE, 1.414) end
+  if N and W then ___expandTo(curr.NW, 1.414) end
+  if S and W then ___expandTo(curr.SW, 1.414) end
 end
 
 function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
