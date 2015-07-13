@@ -378,7 +378,7 @@ end
 
 local __setPathStatePrevious = function(pathState, previousPathState, cost)
   pathState.previousPathState = previousPathState
-  pathState.currentCost = previousPathState.currentCost + (cost or 1)
+  pathState.currentCost = previousPathState.currentCost + cost--(cost or 1)
 end
 
 local __createPathState = function(currentTile, goalTile, previousPathState, cost)
@@ -402,7 +402,7 @@ end
 local __expandPathState = function(pathState, allStates, openStates, object)
 
   local ___canExpandTo = function(t)
-    return (t and ((t.isPathable and t:isPathable(object)) or t:canBeEntered(object)))
+    return (t and ((t.isPathable and t:isPathable(object)) or ((not t.isPathable) and t:canBeEntered(object))))
   end
 
   local ___expandTo = function(t, cost)
@@ -421,13 +421,13 @@ local __expandPathState = function(pathState, allStates, openStates, object)
     if not neighbourState.closed then
       if not neighbourState.opened then
         -- always open states that have not yet been opened and create a link
-        __setPathStatePrevious(neighbourState, pathState)
+        __setPathStatePrevious(neighbourState, pathState, cost)
         neighbourState.opened = true
         table.insert(openStates, neighbourState)
       else
         -- create a link with already open states provided the cost would be improved
         if pathState.currentCost < neighbourState.currentCost then
-          __setPathStatePrevious(neighbourState, pathState)
+          __setPathStatePrevious(neighbourState, pathState, cost)
         end
       end
     end
