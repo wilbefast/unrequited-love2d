@@ -133,7 +133,6 @@ Modification
 --]]--
 
 function GameObject.purgeAll()
-  log:write("PURGED ALL")
 	useful.map(__UPDATE_LIST, 
 		function(object)
 			object.purge = true
