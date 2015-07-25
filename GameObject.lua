@@ -324,6 +324,18 @@ function GameObject.mapToTypeWithinRadius(typename, x, y, radius, f, suchThat)
   end
 end
 
+function GameObject.mapCollidingRadius(x, y, radius, f, suchThat)
+  for i, object in ipairs(__UPDATE_LIST) do
+    if not object.purge and ((not suchThat) or suchThat(object)) then
+      local distance = vector.dist(x, y, object.x, object.y)
+      if distance - object.r <= radius then
+        f(object, distance)
+      end
+    end
+  end
+end
+
+
 --[[------------------------------------------------------------
 Query
 --]]--
