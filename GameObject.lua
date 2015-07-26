@@ -151,41 +151,45 @@ end
 function GameObject.flushCreatedObjects(oblique)
   for _, new_object in pairs(__NEW_INSTANCES) do
 
-    -- add to update list
-    table.insert(__UPDATE_LIST, new_object)
+    if not new_object.purge then
 
-    -- add to draw list
-    if new_object.draw then
-      local inserted = false
-      local new_object_layer = (new_object.layer or (oblique and new_object.y) or 0)
-      local oi = 1
-      while (not inserted) and (oi <= (#__DRAW_LIST)) do
-        local object = __DRAW_LIST[oi]
-        local object_layer = (object.layer or (oblique and object.y) or 0)
-        if (object_layer > new_object_layer) then
-          -- add to the correct position in the list
-          table.insert(__DRAW_LIST, oi, new_object)
-          inserted = true
+      -- add to update list
+      table.insert(__UPDATE_LIST, new_object)
+
+      -- add to draw list
+      if new_object.draw then
+        local inserted = false
+        local new_object_layer = (new_object.layer or (oblique and new_object.y) or 0)
+        local oi = 1
+        while (not inserted) and (oi <= (#__DRAW_LIST)) do
+          local object = __DRAW_LIST[oi]
+          local object_layer = (object.layer or (oblique and object.y) or 0)
+          if (object_layer > new_object_layer) then
+            -- add to the correct position in the list
+            table.insert(__DRAW_LIST, oi, new_object)
+            inserted = true
+          end
+          oi = oi + 1
         end
-        oi = oi + 1
+        if not inserted then
+          -- default (add to the end)
+          table.insert(__DRAW_LIST, new_object)
+        end
       end
-      if not inserted then
-        -- default (add to the end)
-        table.insert(__DRAW_LIST, new_object)
-      end
-    end
 
-    -- add to collision list
-    local _nullf = (function() end)
-    if 
-      (new_object.w and new_object.h)
-      or new_object.r 
-      or new_object.eventCollision 
-    then
-      table.insert(__COLLISION_LIST, new_object)
-      if not new_object.eventCollision then
-        new_object.eventCollision = _nullf
+      -- add to collision list
+      local _nullf = (function() end)
+      if 
+        (new_object.w and new_object.h)
+        or new_object.r 
+        or new_object.eventCollision 
+      then
+        table.insert(__COLLISION_LIST, new_object)
+        if not new_object.eventCollision then
+          new_object.eventCollision = _nullf
+        end
       end
+
     end
 
   end
@@ -354,6 +358,18 @@ function GameObject.countSuchThat(predicate)
   end
   return count
 end
+
+function GameObject.countOfType(typename)
+  local t = __TYPE[typename]
+  local count = 0
+  for i, object in ipairs(__UPDATE_LIST) do
+    if not object.purge and (object.type == t) then
+      count = count + 1 
+    end
+  end
+  return count
+end
+
 
 function GameObject.countOfTypeSuchThat(typename, predicate)
   local t = __TYPE[typename]
