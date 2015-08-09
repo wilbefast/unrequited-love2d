@@ -32,42 +32,48 @@ Initialisation
 
 local Animation = Class
 {
-  init = function(self, img, w, h, n_frames, offx, offy, scalex, scaley, ox, oy)
+  init = function(self, args)
   
-    if type(img) == "table" then
+  
+    -- offset of the animation strip within the image
+    local strip_offx, strip_offy = (args.strip_offx or 0), (args.strip_offy or 0)
+
+    -- remember frame number to prevent array out-of-bounds
+    self.n_frames = (args.n_frames or 1)
+
+    -- reference the image differently depending on whether or not we're reading from a sprite batch
+    local frame_w, frame_h
+    if args.fudge then
+      -- grab the sprite packer if we haven't already
       if not fudge then
         fudge = require("fudge")
       end
-      self.fudge = img
-      img = self.fudge.img
+      self.fudge = args.fudge
+      self.img = args.fudge.img
+      local quad_x, quad_y, quad_w, quad_h = self.fudge.quad:getViewport()
+      strip_offx, strip_offy = strip_offx + quad_x, strip_offy + quad_y
+      frame_w, frame_h = (args.frame_w or (quad_w / self.n_frames)), 
+        (args.frame_h or quad_h)
+    else
+      self.img = args.img
+      frame_w, frame_h = (args.frame_w or (args.img:getWidth() / self.n_frames)), 
+        (args.frame_w or args.img:getHeight())
     end
-
-    -- remember frame number to prevent array out-of-bounds
-    self.n_frames = (n_frames or 1)
     
     -- mirroring
-    self.scalex, self.scaley = (scalex or 1), (scaley or 1)
-  
-    -- store reference to image
-    self.img = img
+    self.scale_x, self.scale_y = (args.scale_x or 1), (args.scale_y or 1)
 
-    -- create quads
-    offx, offy = (offx or 0), (offy or 0)
-    if self.fudge then
-      local qx, qy = self.fudge.quad:getViewport()
-      offx, offy = offx + qx, offy + qy
-    end
     self.quads= {}
-    for i = 1, n_frames do
-      self.quads[i] = love.graphics.newQuad(offx + (i-1)*w, offy, 
-          w, h, img:getWidth(), img:getHeight())
+    for i = 1, self.n_frames do
+      self.quads[i] = love.graphics.newQuad(strip_offx + (i-1)*frame_w, strip_offy, 
+          frame_w, frame_h, self.img:getWidth(), self.img:getHeight())
     end
     
     -- frame size can be useful for lookup even if anim no longer needs it
-    self.frame_w, self.frame_h = w, h
+    self.frame_w, self.frame_h = frame_w, frame_h
 
     -- not all animation have the centre in the same place
-    self.ox, self.oy = ox, oy
+    self.frame_offx, self.frame_offy = args.frame_offx, args.frame_offy
   end,
 }
   
@@ -76,24 +82,24 @@ local Animation = Class
 Game loop
 --]]
   
-function Animation:draw(x, y, subimage, scalex, scaley, ox, oy, angle)
+function Animation:draw(x, y, subimage, scale_x, scale_y, frame_offx, frame_offy, angle)
   if subimage then
     subimage = math.min(self.n_frames, math.floor(subimage))
   else
     subimage = 1
   end  
   
-  scalex = (scalex or self.scalex)
-  scaley = (scaley or self.scaley)
-  ox = (ox or self.ox)
-  oy = (oy or self.oy)
+  scale_x = (scale_x or self.scale_x)
+  scale_y = (scale_y or self.scale_y)
+  frame_offx = (frame_offx or self.frame_offx)
+  frame_offy = (frame_offy or self.frame_offy)
 
   if self.fudge then
     fudge.current.batch:add(self.quads[subimage], x, y, angle or self.angle or 0,
-        scalex, scaley, ox, oy)
+        scale_x, scale_y, frame_offx, frame_offy)
   else
     love.graphics.draw(self.img, self.quads[subimage], x, y, angle or self.angle or 0,
-        scalex, scaley, ox, oy)
+        scale_x, scale_y, frame_offx, frame_offy)
   end
 end
 
