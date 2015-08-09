@@ -52,6 +52,9 @@ Game loop
 --]]
     
 function AnimationView:draw(object, x, y, angle, sizex, sizey)
+  if self.hide then
+    return
+  end
   x, y = (x or object.x), (y or object.y)
   sizex, sizey = (sizex or self.sizex)*self.flipx, (sizey or self.sizex)*self.flipy
   angle = (angle or self.angle)
