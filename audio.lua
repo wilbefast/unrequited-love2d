@@ -17,8 +17,12 @@ local useful = require("unrequited/useful")
 
 local audio = { filenames = {} }
 
-local _music_base_volume = 1
-local _sound_base_volume = 1
+-- the "normal" volume of the current music, between 0 and 1
+local _music_base_volume = 1      
+-- the global multiplier of the music volumes
+local _music_global_volume = 1    
+-- the global multiplier of the sound volumes
+local _sound_global_volume = 1    
 
 
 --[[---------------------------------------------------------------------------
@@ -73,22 +77,21 @@ PLAYING
 --]]--
 
 function audio:play_music(name, volume, loop)
-	if volume then
-		_music_base_volume = volume
-	end
+  _music_base_volume = (volume or 1)
+	volume = _music_base_volume * _music_global_volume
   if loop == nil then loop = true end
   local new_music = self[name]
-  if new_music ~= self.music then
+  if (self.music and self.music:isStopped()) or (new_music ~= self.music) then
     if self.music then
       self.music:stop()
     end
     new_music:setLooping(loop)
     if not self.mute and not self.mute_music then
-      new_music:setVolume((volume or 1))
       new_music:play()
     end
     self.music = new_music
   end
+  self.music:setVolume(volume)
 end
 
 function audio:play_sound(name, pitch_shift, x, y, fixed_pitch)
@@ -118,7 +121,7 @@ function audio:play_sound(name, pitch_shift, x, y, fixed_pitch)
       
       if not self.mute and not self.mute_sound then
         src:play()
-        src:setVolume(src:getVolume() * _sound_base_volume)
+        src:setVolume(src:getVolume() * _sound_global_volume)
       end
       
       return src
@@ -132,12 +135,13 @@ VOLUME
 --]]--
 
 function audio:set_sound_volume(v)
-	_sound_base_volume = v
+	_sound_global_volume = v
 end
 
 function audio:set_music_volume(v)
+  _music_global_volume = v
 	if self.music then
-		self.music:setVolume(v * _music_base_volume)
+		self.music:setVolume(_music_base_volume * _music_global_volume)
 	end
 end
 
@@ -158,7 +162,9 @@ PLAYLISTS
 
 function audio:add_to_playlist(filename, volume)
   self:load_music(filename)
-  if not self.playlist then self.playlist = {} end
+  if not self.playlist then 
+    self.playlist = {} 
+  end
   table.insert(self.playlist, { name = filename, volume = volume })
 end
 
