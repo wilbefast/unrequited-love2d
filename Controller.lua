@@ -51,6 +51,10 @@ function Controller:addAxis(name, fpositive, fnegative)
   self[name] = 0
 end
 
+function Controller:addButtonFromKeyList(name, keylist)
+  self:addButton(name, function() return love.keyboard.isDown(unpack(keylist)) end)
+end
+
 function Controller:addButton(name, fpressed)
   local button = { 
     name = name,
