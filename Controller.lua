@@ -40,6 +40,12 @@ function Controller.updateAll(dt)
   end
 end
 
+function Controller:addAxisFromKeyLists(name, keylist_positive, keylist_negative)
+  self:addAxis(name, 
+    function() return love.keyboard.isDown(unpack(keylist_positive)) end,
+    function() return love.keyboard.isDown(unpack(keylist_negative)) end)
+end
+
 function Controller:addAxis(name, fpositive, fnegative)
   local axis = {
     name = name, 
