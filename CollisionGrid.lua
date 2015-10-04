@@ -181,6 +181,17 @@ function CollisionGrid:loadFromImage(filename, tileClass)
   end
 end
 
+function CollisionGrid:saveToImage(filename, tileClass)
+  local img = love.image.newImageData(self.w, self.h)
+  for col = 0, self.w - 1 do
+    for row = 0, self.h - 1 do
+      local r, g, b, a = self.tiles[col + 1][row + 1]:exportPixel()
+      img:setPixel(col, row, r, g, b, a)
+    end
+  end
+  img:encode(filename)
+end
+
 
 --[[----------------------------------------------------------------------------
 Tile neighbours
