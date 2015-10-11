@@ -26,6 +26,18 @@ local _update = function(dt)
 	end
 end
 
+local _activeWaitThen = function(duration, progress, f)
+  babysitter.add(coroutine.create(function(dt)
+    local t = 0
+    while t < duration do
+      t = t + dt
+      progress(t / duration)
+      coroutine.yield()
+    end
+    f()
+  end))
+end
+
 local _waitThen = function(duration, f)
 	babysitter.add(coroutine.create(function(dt)
    	local t = 0
@@ -42,5 +54,6 @@ return {
 	update = _update,
 	clear = _clear,
 	isBusy = _isBusy,
+  activeWaitThen = _activeWaitThen,
 	waitThen = _waitThen
 }
