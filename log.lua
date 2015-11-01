@@ -26,7 +26,7 @@ DEBUG CONSOLE
 local log = {}
 
 log.messages = { "", "", "", "", "", "", "", "", "", "" }
-log.cycle = { " |", " /", " --", " \\", " |", " /", " --", " \\"}
+log.cycle = { " |", " /", "--", " \\", " |", " /", "--", " \\"}
 log.cycle_i = 1
 
 log.font = love.graphics.newFont(14)
@@ -61,8 +61,13 @@ function log:write(...)
 			self.messages[i] = self.messages[i-1]
 		end
 		-- add the new log to the beginning
-
 		self.messages[1] = message .. self.cycle[self.cycle_i]
+
+		-- cycle
+		self.cycle_i = self.cycle_i + 1
+		if self.cycle_i > #(self.cycle) then 
+			self.cycle_i = 1
+		end
 	else
 		print(debug.traceback())
 	end
@@ -83,12 +88,6 @@ function log:draw(x, y, w)
 	love.graphics.setFont(self.font)
 	for i = 1, #(self.messages) do
 		love.graphics.printf(self.messages[i], x + 16, y + 16 + 32*(i-1), w)
-	end
-
-	-- cycle
-	self.cycle_i = self.cycle_i + 1
-	if self.cycle_i > #(self.cycle) then 
-		self.cycle_i = 1
 	end
 end
 
