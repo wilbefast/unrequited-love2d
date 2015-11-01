@@ -46,6 +46,7 @@ local CollisionGrid = Class
     end
 
     -- create the collision map
+    self.tileClass = tileClass
     self.tiles = {}
     for col = 1, self.w do
       self.tiles[col] = {}
@@ -80,6 +81,20 @@ local CollisionGrid = Class
   end
 }
 
+function CollisionGrid:snapShot(tileClass, tileSnapShot)
+  local result
+  result = CollisionGrid(tileClass, self.tilew, self.tileh, self.w, self.h, self.x, self.y)
+  if tileSnapShot then
+    for col = 1, self.w do
+      for row = 1, self.h do
+        tileSnapShot(result.tiles[col][row], self.tiles[col][row])
+      end
+    end
+  end
+
+  return result
+end
+
 --[[----------------------------------------------------------------------------
 Map functions to all or part of the grid
 --]]--
@@ -100,10 +115,32 @@ function CollisionGrid:mapRectangle(startCol, startRow, w, h, f)
   end
 end
 
+function CollisionGrid:mapDisc(centre_col, centre_row, r, f)
+  local min_col, max_col = centre_col - r, centre_col + r
+
+  for col = min_col, max_col do
+    local col_height = math.floor(math.sqrt(r*r - (centre_col - col)*(centre_col - col)))
+    local min_row, max_row = centre_row - col_height, centre_row + col_height
+    for row = min_row, max_row do
+      if self:validGridPos(col, row) then
+        val = f(self.tiles[col][row], col, row)
+      else
+        val = f(nil, col, row)
+      end
+      if val then
+        return val
+      end
+    end
+  end
+end
+
 function CollisionGrid:map(f)
   for col = 1, self.w do
     for row = 1, self.h do
-      f(self.tiles[col][row], col, row)
+      local val = f(self.tiles[col][row], col, row)
+      if val then
+        return val
+      end
     end
   end
 end
