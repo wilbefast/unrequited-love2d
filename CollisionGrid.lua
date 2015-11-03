@@ -424,9 +424,12 @@ local __estimatePathCost = function(startTile, endTile)
   return Vector.len(startTile.col, startTile.row, endTile.col, endTile.row)
 end
 
-local __setPathStatePrevious = function(pathState, previousPathState, cost)
+local __setPathStatePrevious = function(pathState, previousPathState, cost, object)
   pathState.previousPathState = previousPathState
-  pathState.currentCost = previousPathState.currentCost + cost--(cost or 1)
+  pathState.currentCost = previousPathState.currentCost + (cost or 1)
+  pathState.acceptNonPathable = (previousPathState.acceptNonPathable 
+      and pathState.currentTile.isPathable 
+      and not pathState.currentTile:isPathable(object))
 end
 
 local __createPathState = function(currentTile, goalTile, previousPathState, cost)
@@ -437,7 +440,7 @@ local __createPathState = function(currentTile, goalTile, previousPathState, cos
     closed = false,
   }
   if previousPathState then
-    __setPathStatePrevious(pathState, previousPathState, cost)
+    __setPathStatePrevious(pathState, previousPathState, cost, object)
   else
     pathState.currentCost = 0
   end
@@ -450,32 +453,36 @@ end
 local __expandPathState = function(pathState, allStates, openStates, object)
 
   local ___canExpandTo = function(t)
-    return (t and ((t.isPathable and t:isPathable(object)) or ((not t.isPathable) and t:canBeEntered(object))))
+    if not t then
+      return false
+    elseif t.isPathable then
+      return (pathState.acceptNonPathable or t:isPathable(object))
+    else
+      return t:canBeEntered(object)
+    end
   end
 
   local ___expandTo = function(t, cost)
     if not ___canExpandTo(t) then
       return
     end
-
     -- find or create the neighbour state
     local neighbourState = allStates[t]
     if not neighbourState then
       neighbourState = __createPathState(t, pathState.goalTile, pathState, cost)
       allStates[t] = neighbourState
     end
-
     -- do nothing if the state is closed
     if not neighbourState.closed then
       if not neighbourState.opened then
         -- always open states that have not yet been opened and create a link
-        __setPathStatePrevious(neighbourState, pathState, cost)
+        __setPathStatePrevious(neighbourState, pathState, cost, object)
         neighbourState.opened = true
         table.insert(openStates, neighbourState)
       else
         -- create a link with already open states provided the cost would be improved
         if pathState.currentCost < neighbourState.currentCost then
-          __setPathStatePrevious(neighbourState, pathState, cost)
+          __setPathStatePrevious(neighbourState, pathState, cost, object)
         end
       end
     end
@@ -505,6 +512,9 @@ function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
   end
 
   local startState = __createPathState(startTile, endTile)
+  if startTile.isPathable and not startTile:isPathable(object) then
+    startState.acceptNonPathable = true
+  end
 
   local openStates = { startState }
   local allStates = { startTile = startState}
