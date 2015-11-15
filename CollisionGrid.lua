@@ -421,15 +421,18 @@ Pathing
 --]]--
 
 local __estimatePathCost = function(startTile, endTile)
-  return Vector.len(startTile.col, startTile.row, endTile.col, endTile.row)
+  return Vector.dist(startTile.col, startTile.row, endTile.col, endTile.row)
 end
 
 local __setPathStatePrevious = function(pathState, previousPathState, cost, object)
   pathState.previousPathState = previousPathState
   pathState.currentCost = previousPathState.currentCost + (cost or 1)
   pathState.acceptNonPathable = (previousPathState.acceptNonPathable 
-      and pathState.currentTile.isPathable 
-      and not pathState.currentTile:isPathable(object))
+    and pathState.currentTile.isPathable 
+    and not pathState.currentTile:isPathable(object))
+  if pathState.acceptNonPathable then
+    pathState.currentCost = pathState.currentCost*2
+  end
 end
 
 local __createPathState = function(currentTile, goalTile, previousPathState, cost)
@@ -456,7 +459,11 @@ local __expandPathState = function(pathState, allStates, openStates, object)
     if not t then
       return false
     elseif t.isPathable then
-      return (pathState.acceptNonPathable or t:isPathable(object))
+      if pathState.acceptNonPathable then
+        return t:canBeEntered(object)
+      else
+        return t:isPathable(object)
+      end
     else
       return t:canBeEntered(object)
     end
@@ -466,6 +473,7 @@ local __expandPathState = function(pathState, allStates, openStates, object)
     if not ___canExpandTo(t) then
       return
     end
+
     -- find or create the neighbour state
     local neighbourState = allStates[t]
     if not neighbourState then
@@ -542,9 +550,8 @@ function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
     state.closed = true
 
     -- keep the best closed state, just in case the target is inaccessible
-    if not fallback or __estimatePathCost(state.currentTile, endTile)
-    < __estimatePathCost(fallback.currentTile, endTile) then
-      fallback_plan = state
+    if not fallback or __estimatePathCost(state.currentTile, endTile) < __estimatePathCost(fallback.currentTile, endTile) then
+      fallback = state
     end
 
     -- sort the lowest cost states the the end of the table, they will be popped first
