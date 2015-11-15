@@ -453,7 +453,7 @@ local __createPathState = function(currentTile, goalTile, previousPathState, cos
 end
 
 
-local __expandPathState = function(pathState, allStates, openStates, object)
+local __expandPathState = function(pathState, allStates, openStates, object, costFunction)
 
   local ___canExpandTo = function(t)
     if not t then
@@ -470,7 +470,7 @@ local __expandPathState = function(pathState, allStates, openStates, object)
   end
 
   local ___expandTo = function(t, cost)
-    if not ___canExpandTo(t) then
+    if (not ___canExpandTo(t)) or (cost == math.huge) then
       return
     end
 
@@ -500,18 +500,24 @@ local __expandPathState = function(pathState, allStates, openStates, object)
 
   -- adjascent
   for _, neighbourTile in ipairs(curr.neighbours4) do
-    ___expandTo(neighbourTile, 1)
+    if neighbourTile then 
+      ___expandTo(neighbourTile, costFunction(neighbourTile, 1))
+    end
   end
 
   -- diagonals
   local N, S, E, W = ___canExpandTo(curr.N), ___canExpandTo(curr.S), ___canExpandTo(curr.E), ___canExpandTo(curr.W)
-  if N and E then ___expandTo(curr.NE, 1.414) end
-  if S and E then ___expandTo(curr.SE, 1.414) end
-  if N and W then ___expandTo(curr.NW, 1.414) end
-  if S and W then ___expandTo(curr.SW, 1.414) end
+  if N and E and curr.NE then ___expandTo(curr.NE, costFunction(curr.NE, 1.414)) end
+  if S and E and curr.SE then ___expandTo(curr.SE, costFunction(curr.SE, 1.414)) end
+  if N and W and curr.NW then ___expandTo(curr.NW, costFunction(curr.NW, 1.414)) end
+  if S and W and curr.SW then ___expandTo(curr.SW, costFunction(curr.SW, 1.414)) end
 end
 
-function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
+function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object, costFunction)
+
+  costFunction = costFunction or function(tile, baseCost)
+    return (baseCost or 1)
+  end
 
   local startTile = self:gridToTile(startcol, startrow)
   local endTile = self:gridToTile(endcol, endrow)
@@ -534,7 +540,7 @@ function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
     local state = table.remove(openStates)
     -- have we reached the end?
     if state.currentTile == endTile then
-      local path = { }
+      local path = { cost = state.currentCost }
       -- read back and return the result
       while state do
         table.insert(path, 0, state.currentTile)
@@ -544,7 +550,7 @@ function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
     end
 
     -- try to expand each neighbour
-    __expandPathState(state, allStates, openStates, object)
+    __expandPathState(state, allStates, openStates, object, costFunction)
 
     -- remember to close the state now that all connections have been expanded
     state.closed = true
@@ -559,7 +565,7 @@ function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
   end
 
   -- fail!
-  local path = { }
+  local path = { cost = math.huge }
   if fallback then
     local state = fallback
     while state do
@@ -570,11 +576,11 @@ function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object)
   return path
 end
 
-function CollisionGrid:pixelPath(startx, starty, endx, endy, object)
+function CollisionGrid:pixelPath(startx, starty, endx, endy, object, costFunction)
   local startcol, startrow = self:pixelToGrid(startx, starty)
   local endcol, endrow = self:pixelToGrid(endx, endy)
-  local gridPath = self:gridPath(startcol, startrow, endcol, endrow, object)
-  local pixelPath = {}
+  local gridPath = self:gridPath(startcol, startrow, endcol, endrow, object, costFunction)
+  local pixelPath = { cost = gridPath.cost }
   for _, tile in ipairs(gridPath) do
     table.insert(pixelPath, { x = tile.x + tile.w*0.5, y = tile.y + tile.h*0.5 })
   end
