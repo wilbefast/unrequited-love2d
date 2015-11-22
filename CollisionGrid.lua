@@ -417,7 +417,7 @@ function CollisionGrid:objectCollisionNext(go, dt)
 end
 
 --[[----------------------------------------------------------------------------
-Pathing
+A*
 --]]--
 
 local __estimatePathCost = function(startTile, endTile)
@@ -447,7 +447,11 @@ local __createPathState = function(currentTile, goalTile, previousPathState, cos
   else
     pathState.currentCost = 0
   end
-  pathState.remainingCostEstimate = __estimatePathCost(pathState.currentTile, pathState.goalTile)
+  if goalTile then
+    pathState.remainingCostEstimate = __estimatePathCost(pathState.currentTile, pathState.goalTile)
+  else
+    pathState.remainingCostEstimate = 0
+  end
   pathState.totalCostEstimate = pathState.currentCost + pathState.remainingCostEstimate
   return pathState
 end
@@ -522,7 +526,7 @@ function CollisionGrid:gridPath(startcol, startrow, endcol, endrow, object, cost
   local startTile = self:gridToTile(startcol, startrow)
   local endTile = self:gridToTile(endcol, endrow)
   if not startTile or not endTile then
-    return {}
+    return { cost = math.huge }
   end
 
   local startState = __createPathState(startTile, endTile)
@@ -587,6 +591,79 @@ function CollisionGrid:pixelPath(startx, starty, endx, endy, object, costFunctio
 
   return pixelPath
 end
+
+--[[----------------------------------------------------------------------------
+Dijkstra's algorithm
+--]]--
+
+function CollisionGrid:utilityGridPath(startcol, startrow, object, utilityFunction)
+
+  local startTile = self:gridToTile(startcol, startrow)
+  if not startTile then
+    return { cost = math.huge }
+  end
+
+  local startState = __createPathState(startTile)
+  if startTile.isPathable and not startTile:isPathable(object) then
+    startState.acceptNonPathable = true
+  end
+
+  local openStates = { startState }
+  local allStates = { startTile = startState}
+
+  local best_utility = -math.huge
+  local best_state = nil
+
+  while (#openStates > 0) do
+    -- expand from the next open state
+    local state = table.remove(openStates)
+    local utility = -state.currentCost
+    if utility > best_utility then
+      best_utility = utility
+      best_state = state
+    end
+
+    -- try to expand each neighbour
+    __expandPathState(state, allStates, openStates, object, function(tile, baseCost)
+      return (baseCost or 1) - utilityFunction(tile)
+    end)
+
+    -- remember to close the state now that all connections have been expanded
+    state.closed = true
+
+    -- sort the lowest cost states the the end of the table, they will be popped first
+    table.sort(openStates, function(a, b) return (a.currentCost > b.currentCost) end)
+  end
+
+  -- all done
+  local path = { utility = best_utility }
+  if best_state then
+    local state = best_state
+    while state do
+      table.insert(path, 0, state.currentTile)
+      state = state.previousPathState
+    end
+  end
+  return path
+end
+
+function CollisionGrid:utilityPixelPath(startx, starty, object, utilityFunction)
+  local startcol, startrow = self:pixelToGrid(startx, starty)
+  local gridPath = self:utilityGridPath(startcol, startrow, object, utilityFunction)
+  local pixelPath = { utility = gridPath.utility }
+  for _, tile in ipairs(gridPath) do
+    table.insert(pixelPath, { x = tile.x + tile.w*0.5, y = tile.y + tile.h*0.5 })
+  end
+
+  return pixelPath
+end
+
+
+
+--[[----------------------------------------------------------------------------
+Raycasting
+--]]--
+
 
 function CollisionGrid:gridRayCollision(startcol, startrow, endcol, endrow, object)
   -- http://en.wikipedia.org/wiki/Bresenham's_line_algorithm
