@@ -596,7 +596,8 @@ end
 Dijkstra's algorithm
 --]]--
 
-function CollisionGrid:utilityGridPath(startcol, startrow, object, utilityFunction)
+function CollisionGrid:utilityGridPath(startcol, startrow, object, utilityFunction, costFunction)
+  costFunction = costFunction or function() return 0 end
 
   local startTile = self:gridToTile(startcol, startrow)
   if not startTile then
@@ -617,7 +618,7 @@ function CollisionGrid:utilityGridPath(startcol, startrow, object, utilityFuncti
   while (#openStates > 0) do
     -- expand from the next open state
     local state = table.remove(openStates)
-    local utility = -state.currentCost
+    local utility = utilityFunction(state.currentTile) - state.currentCost
     if utility > best_utility then
       best_utility = utility
       best_state = state
@@ -625,7 +626,7 @@ function CollisionGrid:utilityGridPath(startcol, startrow, object, utilityFuncti
 
     -- try to expand each neighbour
     __expandPathState(state, allStates, openStates, object, function(tile, baseCost)
-      return (baseCost or 1) - utilityFunction(tile)
+      return (baseCost or 1) + costFunction(tile)
     end)
 
     -- remember to close the state now that all connections have been expanded
@@ -647,9 +648,11 @@ function CollisionGrid:utilityGridPath(startcol, startrow, object, utilityFuncti
   return path
 end
 
-function CollisionGrid:utilityPixelPath(startx, starty, object, utilityFunction)
+function CollisionGrid:utilityPixelPath(startx, starty, object, utilityFunction, costFunction)
+  costFunction = costFunction or function() return 0 end
+
   local startcol, startrow = self:pixelToGrid(startx, starty)
-  local gridPath = self:utilityGridPath(startcol, startrow, object, utilityFunction)
+  local gridPath = self:utilityGridPath(startcol, startrow, object, utilityFunction, costFunction)
   local pixelPath = { utility = gridPath.utility }
   for _, tile in ipairs(gridPath) do
     table.insert(pixelPath, { x = tile.x + tile.w*0.5, y = tile.y + tile.h*0.5 })
