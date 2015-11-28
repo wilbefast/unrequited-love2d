@@ -35,9 +35,9 @@ local Controller = Class
 }
 
 function Controller.updateAll(dt)
-  for _, controller in ipairs(__INSTANCES) do
+  useful.map(__INSTANCES, function(controller)
     controller:update(dt)
-  end
+  end)
 end
 
 function Controller:addAxisFromKeyLists(name, keylist_positive, keylist_negative)
