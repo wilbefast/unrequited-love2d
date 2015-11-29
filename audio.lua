@@ -104,7 +104,12 @@ function audio:play_sound(name, pitch_shift, x, y, fixed_pitch)
     return
   end
 
-  for _, src in ipairs(self[name]) do
+  local sources = self[name]
+  if not sources then
+    print("Missing sound", name)
+    return
+  end
+  for _, src in ipairs(sources) do
     if src:isStopped() then
       
       -- shift the pitch
