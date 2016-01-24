@@ -172,6 +172,8 @@ Controller.Joystick = __Joystick
 Gamepad controller
 --]]--
 
+Controller.gamepad_count = 0
+
 local __Gamepad = Class
 {
   axis_names =
@@ -204,6 +206,9 @@ local __Gamepad = Class
     for _, name in ipairs(self.button_names) do
       self:addButton(name, function() return joystick:isGamepadDown(name) end)
     end
+
+    Controller.gamepad_count = Controller.gamepad_count + 1
+    self.index = Controller.gamepad_count
   end,
 }
 __Gamepad:include(Controller)
