@@ -263,7 +263,7 @@ function useful.recordGIF(key)
   if (not key) or love.keyboard.isDown(key) then
     local s = love.graphics.newScreenshot()
     __kev__snum = (__kev__snum or 0) + 1
-    s:encode(string.format("%04d",__kev__snum)..".png")
+    s:encode("png", string.format("%04d",__kev__snum)..".png")
   end
 end
 
