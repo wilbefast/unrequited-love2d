@@ -1,5 +1,5 @@
 --[[
-Copyright (c) 2010-2013 Matthias Richter
+Copyright (c) 2012-2013 Matthias Richter
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,141 +24,123 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ]]--
 
-local assert = assert
 local sqrt, cos, sin = math.sqrt, math.cos, math.sin
 
-local Vector = {}
-Vector.__index = Vector
-
-local function new(x,y)
-	return setmetatable({x = x or 0, y = y or 0}, Vector)
+local function str(x,y)
+	return "("..tonumber(x)..","..tonumber(y)..")"
 end
 
-local function isVector(v)
-	return getmetatable(v) == Vector
+local function mul(s, x,y)
+	return s*x, s*y
 end
 
-function Vector:clone()
-	return new(self.x, self.y)
+local function div(s, x,y)
+	return x/s, y/s
 end
 
-function Vector:unpack()
-	return self.x, self.y
+local function add(x1,y1, x2,y2)
+	return x1+x2, y1+y2
 end
 
-function Vector:__tostring()
-	return "("..tonumber(self.x)..","..tonumber(self.y)..")"
+local function sub(x1,y1, x2,y2)
+	return x1-x2, y1-y2
 end
 
-function Vector.__unm(a)
-	return new(-a.x, -a.y)
+local function permul(x1,y1, x2,y2)
+	return x1*x2, y1*y2
 end
 
-function Vector.__add(a,b)
-	assert(isVector(a) and isVector(b), "Add: wrong argument types (<Vector> expected)")
-	return new(a.x+b.x, a.y+b.y)
+local function dot(x1,y1, x2,y2)
+	return x1*x2 + y1*y2
 end
 
-function Vector.__sub(a,b)
-	assert(isVector(a) and isVector(b), "Sub: wrong argument types (<Vector> expected)")
-	return new(a.x-b.x, a.y-b.y)
+local function det(x1,y1, x2,y2)
+	return x1*y2 - y1*x2
 end
 
-function Vector.__mul(a,b)
-	if type(a) == "number" then
-		return new(a*b.x, a*b.y)
-	elseif type(b) == "number" then
-		return new(b*a.x, b*a.y)
-	else
-		assert(isVector(a) and isVector(b), "Mul: wrong argument types (<Vector> or <number> expected)")
-		return a.x*b.x + a.y*b.y
-	end
+local function eq(x1,y1, x2,y2)
+	return x1 == x2 and y1 == y2
 end
 
-function Vector.__div(a,b)
-	assert(isVector(a) and type(b) == "number", "wrong argument types (expected <Vector> / <number>)")
-	return new(a.x / b, a.y / b)
+local function lt(x1,y1, x2,y2)
+	return x1 < x2 or (x1 == x2 and y1 < y2)
 end
 
-function Vector.__eq(a,b)
-	return a.x == b.x and a.y == b.y
+local function le(x1,y1, x2,y2)
+	return x1 <= x2 and y1 <= y2
 end
 
-function Vector.__lt(a,b)
-	return a.x < b.x or (a.x == b.x and a.y < b.y)
+local function len2(x,y)
+	return x*x + y*y
 end
 
-function Vector.__le(a,b)
-	return a.x <= b.x and a.y <= b.y
+local function len(x,y)
+	return sqrt(x*x + y*y)
 end
 
-function Vector.permul(a,b)
-	assert(isVector(a) and isVector(b), "permul: wrong argument types (<Vector> expected)")
-	return new(a.x*b.x, a.y*b.y)
+local function dist(x1,y1, x2,y2)
+	return len(x1-x2, y1-y2)
 end
 
-function Vector:len2()
-	return self.x * self.x + self.y * self.y
+local function dist2(x1,y1, x2,y2)
+	return len2(x1-x2, y1-y2)
 end
 
-function Vector:len()
-	return sqrt(self.x * self.x + self.y * self.y)
-end
-
-function Vector.dist(a, b)
-	assert(isVector(a) and isVector(b), "dist: wrong argument types (<Vector> expected)")
-	local dx = a.x - b.x
-	local dy = a.y - b.y
-	return sqrt(dx * dx + dy * dy)
-end
-
-function Vector:normalize_inplace()
-	local l = self:len()
+local function normalise(x,y)
+	local l = len(x,y)
 	if l > 0 then
-		self.x, self.y = self.x / l, self.y / l
+		x, y = x/l, y/l
 	end
-	return self
+	return x,y,l
 end
 
-function Vector:normalized()
-	return self:clone():normalize_inplace()
-end
-
-function Vector:rotate_inplace(phi)
+local function rotate(phi, x,y)
 	local c, s = cos(phi), sin(phi)
-	self.x, self.y = c * self.x - s * self.y, s * self.x + c * self.y
-	return self
+	return c*x - s*y, s*x + c*y
 end
 
-function Vector:rotated(phi)
-	local c, s = cos(phi), sin(phi)
-	return new(c * self.x - s * self.y, s * self.x + c * self.y)
+local function perpendicular(x,y)
+	return -y, x
 end
 
-function Vector:perpendicular()
-	return new(-self.y, self.x)
+local function project(x,y, u,v)
+	local s = (x*u + y*v) / (u*u + v*v)
+	return s*u, s*v
 end
 
-function Vector:projectOn(v)
-	assert(isVector(v), "invalid argument: cannot project Vector on " .. type(v))
-	-- (self * v) * v / v:len2()
-	local s = (self.x * v.x + self.y * v.y) / (v.x * v.x + v.y * v.y)
-	return new(s * v.x, s * v.y)
-end
-
-function Vector:mirrorOn(v)
-	assert(isVector(v), "invalid argument: cannot mirror Vector on " .. type(v))
-	-- 2 * self:projectOn(v) - self
-	local s = 2 * (self.x * v.x + self.y * v.y) / (v.x * v.x + v.y * v.y)
-	return new(s * v.x - self.x, s * v.y - self.y)
-end
-
-function Vector:cross(v)
-	assert(isVector(v), "cross: wrong argument types (<Vector> expected)")
-	return self.x * v.y - self.y * v.x
+local function mirror(x,y, u,v)
+	local s = 2 * (x*u + y*v) / (u*u + v*v)
+	return s*u - x, s*v - y
 end
 
 
 -- the module
-return setmetatable({new = new, isVector = isVector},
-	{__call = function(_, ...) return new(...) end})
+return {
+	str = str,
+
+	-- arithmetic
+	mul    = mul,
+	div    = div,
+	add    = add,
+	sub    = sub,
+	permul = permul,
+	dot    = dot,
+	det    = det,
+	cross  = det,
+
+	-- relation
+	eq = eq,
+	lt = lt,
+	le = le,
+
+	-- misc operations
+	len2          = len2,
+	len           = len,
+	dist          = dist,
+	dist2					= dist2,
+	normalise     = normalise,
+	rotate        = rotate,
+	perpendicular = perpendicular,
+	project       = project,
+	mirror        = mirror,
+}
