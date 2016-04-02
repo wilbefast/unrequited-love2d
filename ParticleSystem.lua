@@ -20,8 +20,8 @@ ParticleSystem GAMEOBJECT
 Includes
 --]]--
 
-local Class = require("hump/class")
-local Vector = require("hump/vector-light")
+local Class = require("unrequited/Class")
+local Vector = require("unrequited/Vector")
 
 local GameObject = require("unrequited/GameObject")
 local log = require("unrequited/log")

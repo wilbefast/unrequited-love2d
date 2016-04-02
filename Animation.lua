@@ -17,7 +17,7 @@ Lesser General Public License for more details.
 IMPORTS
 --]]------------------------------------------------------------
 
-local Class = require("hump/class")
+local Class = require("unrequited/Class")
 local useful = require("unrequited/useful")
 
 local fudge = nil

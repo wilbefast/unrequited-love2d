@@ -17,8 +17,8 @@ Lesser General Public License for more details.
 IMPORTS
 --]]------------------------------------------------------------
 
-local Class = require("hump/class")
-local Vector = require("hump/vector-light")
+local Class = require("unrequited/Class")
+local Vector = require("unrequited/Vector")
 
 local useful = require("unrequited/useful")
 local scaling = require("unrequited/scaling")

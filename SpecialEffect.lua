@@ -17,7 +17,7 @@ Lesser General Public License for more details.
 IMPORTS
 --]]------------------------------------------------------------
 
-local Class      = require("hump/class")
+local Class      = require("unrequited/Class")
 local GameObject = require("GameObject")
 local Animation = require("unrequited/Animation")
 local AnimationView = require("unrequited/AnimationView")
