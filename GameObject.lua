@@ -18,7 +18,7 @@ IMPORTS
 --]]------------------------------------------------------------
 
 local Class = require("unrequited/Class")
-local vector = require("unrequited/Vector")
+local Vector = require("unrequited/Vector")
 
 local useful = require("unrequited/useful")
 local scaling = require("unrequited/scaling")
@@ -305,7 +305,7 @@ function GameObject.mapWithinRadius(x, y, radius, f, suchThat)
   local radius2 = radius*radius
   for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and ((not suchThat) or suchThat(object)) then
-      local distance2 = vector.dist2(x, y, object.x, object.y)
+      local distance2 = Vector.dist2(x, y, object.x, object.y)
       if distance2 <= radius2 then
         f(object, distance2)
       end
@@ -319,7 +319,7 @@ function GameObject.mapToTypeWithinRadius(typename, x, y, radius, f, suchThat)
   for i, object in ipairs(__UPDATE_LIST) do
     if  not object.purge and (object.type == t) then
       if (not suchThat) or suchThat(object) then
-        local distance2 = vector.dist2(x, y, object.x, object.y)
+        local distance2 = Vector.dist2(x, y, object.x, object.y)
         if distance2 <= radius2 then
           f(object, distance2)
         end
@@ -331,7 +331,7 @@ end
 function GameObject.mapCollidingRadius(x, y, radius, f, suchThat)
   for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and ((not suchThat) or suchThat(object)) then
-      local distance = vector.dist(x, y, object.x, object.y)
+      local distance = Vector.dist(x, y, object.x, object.y)
       if distance - object.r <= radius then
         f(object, distance)
       end
@@ -531,7 +531,7 @@ function GameObject.getNearest(x, y, suchThat)
   local nearest, nearest_distance2 = nil, math.huge
   for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and ((not suchThat) or suchThat(object)) then
-      local distance2 = vector.dist2(x, y, object.x, object.y)
+      local distance2 = Vector.dist2(x, y, object.x, object.y)
       if distance2 < nearest_distance2 then
         nearest, nearest_distance2 = object, distance2
       end
@@ -544,7 +544,7 @@ function GameObject.getFurthest(x, y, suchThat)
   local furthest, furthest_distance2 = nil, math.huge
   for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and ((not suchThat) or suchThat(object)) then
-      local distance2 = vector.dist2(x, y, object.x, object.y)
+      local distance2 = Vector.dist2(x, y, object.x, object.y)
       if distance2 > nearest_distance2 then
         furthest, furthest_distance2 = object, distance2
       end
@@ -559,7 +559,7 @@ function GameObject.getNearestOfType(typename, x, y, suchThat)
   for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and (object.type == t) then
       if (not suchThat) or suchThat(object) then
-        local distance2 = vector.dist2(x, y, object.x, object.y)
+        local distance2 = Vector.dist2(x, y, object.x, object.y)
         if distance2 < nearest_distance2 then
           nearest, nearest_distance2 = object, distance2
         end
@@ -575,7 +575,7 @@ function GameObject.getNearestToCollideOfType(typename, x, y, suchThat)
   for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and (object.type == t) then
       if (not suchThat) or suchThat(object) then
-        local toMe_x, toMe_y, dist = Vector.normalize(x - object.x, y - object.y)
+        local toMe_x, toMe_y, dist = Vector.normalise(x - object.x, y - object.y)
         dist = dist - (object.r or object.w or 0)
         if dist < nearest_distance then
           nearest, nearest_distance = object, dist
@@ -592,7 +592,7 @@ function GameObject.getFurthestOfType(typename, x, y, suchThat)
   for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and (object.type == t) then
       if (not suchThat) or suchThat(object) then
-        local distance2 = vector.dist2(x, y, object.x, object.y)
+        local distance2 = Vector.dist2(x, y, object.x, object.y)
         if distance2 > nearest_distance2 then
           furthest, furthest_distance2 = object, distance2
         end
@@ -657,7 +657,7 @@ function GameObject:isColliding(other)
 
   -- circle-circle collisions ?
   if self.r and other.r then
-    return (vector.dist2(self.x, self.y, other.x, other.y) < useful.sqr(self.r + other.r))
+    return (Vector.dist2(self.x, self.y, other.x, other.y) < useful.sqr(self.r + other.r))
 
   -- box-box collisions ?
   elseif self.w and self.h and other.w and other.h then
@@ -763,26 +763,26 @@ Physics
 
 function GameObject:accelerateTowards(x, y, speed)
   speed = (speed or 1)
-  local ddx, ddy = vector.normalize(x - self.x, y - self.y)
+  local ddx, ddy = Vector.normalise(x - self.x, y - self.y)
   self.dx, self.dy = self.dx + ddx*speed, self.dy + ddy*speed
 end
 
 function GameObject:accelerateAwayFrom(x, y, speed)
   speed = (speed or 1)
-  local ddx, ddy = vector.normalize(x - self.x, y - self.y)
+  local ddx, ddy = Vector.normalise(x - self.x, y - self.y)
   self.dx, self.dy = self.dx - ddx*speed, self.dy - ddy*speed
 end
 
 
 function GameObject:accelerateTowardsObject(o, speed)
   speed = (speed or 1)
-  local ddx, ddy = vector.normalize(o.x - self.x, o.y - self.y)
+  local ddx, ddy = Vector.normalise(o.x - self.x, o.y - self.y)
   self.dx, self.dy = self.dx + ddx*speed, self.dy + ddy*speed
 end
 
 function GameObject:accelerateAwayFromObject(o, speed)
   speed = (speed or 1)
-  local ddx, ddy = vector.normalize(o.x - self.x, o.y - self.y)
+  local ddx, ddy = Vector.normalise(o.x - self.x, o.y - self.y)
   self.dx, self.dy = self.dx - ddx*speed, self.dy - ddy*speed
 end
 
@@ -839,7 +839,7 @@ function GameObject:update(dt)
   end
   if fisix.FRICTION and ((self.dx ~= 0) or (self.dy ~= 0)) then
 
-    local normed_dx, normed_dy, original_speed = vector.normalize(self.dx, self.dy)
+    local normed_dx, normed_dy, original_speed = Vector.normalise(self.dx, self.dy)
     local new_speed = original_speed / (math.pow(fisix.FRICTION, dt)) 
     self.dx, self.dy = normed_dx*new_speed, normed_dy*new_speed
   end
@@ -853,9 +853,9 @@ function GameObject:update(dt)
     self.dy = fisix.MAX_DY*useful.sign(self.dy)
   end
   if fisix.MAX_SPEED then
-    local speed2 = vector.len(self.dx, self.dy)
+    local speed2 = Vector.len(self.dx, self.dy)
     if speed2 > fisix.MAX_SPEED*fisix.MAX_SPEED then
-      local dx, dy = vector.normalize(self.dx, self.dy)
+      local dx, dy = Vector.normalise(self.dx, self.dy)
       self.dx, self.dy = dx*fisix.MAX_SPEED, dy*fisix.MAX_SPEED
     end
   end
