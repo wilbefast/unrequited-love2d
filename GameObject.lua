@@ -198,7 +198,7 @@ end
 
 function GameObject.updateAll(dt, view)
   -- oblique viewing angle ?
-  local oblique = (view and view.oblique)
+  local oblique = (view and view.oblique) or GameObject.view_oblique
   -- add new objects
   GameObject.flushCreatedObjects(oblique)
 
