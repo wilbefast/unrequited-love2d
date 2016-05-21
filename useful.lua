@@ -263,7 +263,8 @@ function useful.recordGIF(key)
   if (not key) or love.keyboard.isDown(key) then
     local s = love.graphics.newScreenshot()
     __kev__snum = (__kev__snum or 0) + 1
-    s:encode("png", string.format("%04d",__kev__snum)..".png")
+    love.filesystem.createDirectory("GIF")
+    s:encode("png", string.format("GIF/%04d",__kev__snum)..".png")
   end
 end
 
@@ -346,6 +347,15 @@ function useful.oval(mode, ox, oy, w, h)
     end
     px, py = x, y
   end
+end
+
+function useful.anySuchThat(table, predicate)
+  for i, v in ipairs(table) do
+    if predicate(v) then
+      return true
+    end
+  end
+  return false
 end
 
 function useful.arc(mode, ox, oy, w, h, start_angle, amount)
