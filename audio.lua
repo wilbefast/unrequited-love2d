@@ -100,8 +100,7 @@ function audio:play_sound(name, pitch_shift, x, y, fixed_pitch)
   end
 
   if self.filenames[name] then
-    self:play_sound(useful.randIn(self.filenames[name]))
-    return
+    return self:play_sound(useful.randIn(self.filenames[name]))
   end
 
   local sources = self[name]
