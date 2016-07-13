@@ -49,11 +49,25 @@ local _waitThen = function(duration, f)
  	end))
 end
 
+local _periodically = function(period, f)
+	babysitter.add(coroutine.create(function(dt)
+		while _coroutines do
+	   	local t = 0
+	   	while t < period do
+	   		t = t + dt
+	   		coroutine.yield()
+	   	end
+	   	f()
+   	end
+ 	end))
+end
+
 return {
 	add = _add,
 	update = _update,
 	clear = _clear,
 	isBusy = _isBusy,
   activeWaitThen = _activeWaitThen,
-	waitThen = _waitThen
+	waitThen = _waitThen,
+	periodically = _periodically
 }

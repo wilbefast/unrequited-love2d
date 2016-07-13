@@ -250,6 +250,13 @@ KEYBOARD_RIGHT:addAxis("lefty",
 KEYBOARD_RIGHT.keyboard = true
 Controller.KEYBOARD_RIGHT = KEYBOARD_RIGHT
 
+
+--[[------------------------------------------------------------
+Null controller (never fires any inputs, or input fired manually by code)
+--]]--
+
+Controller.NULL = Controller()
+
 --[[------------------------------------------------------------
 EXPORT
 --]]------------------------------------------------------------
