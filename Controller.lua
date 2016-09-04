@@ -41,18 +41,18 @@ function Controller.updateAll(dt)
 end
 
 function Controller:addAxisFromKeyLists(name, keylist_positive, keylist_negative)
-  self:addAxis(name, 
+  self:addAxis(name,
     function() return love.keyboard.isDown(unpack(keylist_positive)) end,
     function() return love.keyboard.isDown(unpack(keylist_negative)) end)
 end
 
 function Controller:addAxis(name, fpositive, fnegative)
   local axis = {
-    name = name, 
-    __fnegative = fnegative, 
-    __fpositive = fpositive, 
+    name = name,
+    __fnegative = fnegative,
+    __fpositive = fpositive,
     position = 0
-  } 
+  }
   self.axes[name] = axis
   self[name] = 0
 end
@@ -62,12 +62,12 @@ function Controller:addButtonFromKeyList(name, keylist)
 end
 
 function Controller:addButton(name, fpressed)
-  local button = { 
+  local button = {
     name = name,
     name_held = name .. "_held",
-    __fpressed = fpressed, 
-    __held_prev = false, 
-    pressed = false, 
+    __fpressed = fpressed,
+    __held_prev = false,
+    pressed = false,
     trigger = 0
   }
   self.buttons[name] = button
@@ -75,25 +75,25 @@ function Controller:addButton(name, fpressed)
 end
 
 function Controller:update(dt)
-  for _, axis in pairs(self.axes) do    
+  for _, axis in pairs(self.axes) do
     if axis.__fnegative then
       axis.position = ((axis.__fpositive() and 1) or 0) - ((axis.__fnegative() and 1) or 0)
     else
       axis.position = axis.__fpositive()
     end
-     
+
     -- shortcut access
     self[axis.name] = axis.position
   end
 
-  for _, button in pairs(self.buttons) do    
+  for _, button in pairs(self.buttons) do
     button.__held_prev = button.pressed
     button.pressed = button.__fpressed()
     if button.pressed == button.__held_prev then
       button.trigger = 0
     elseif button.pressed then
       button.trigger = 1
-    else    
+    else
       button.trigger = -1
     end
 
@@ -172,7 +172,7 @@ Controller.Joystick = __Joystick
 Gamepad controller
 --]]--
 
-Controller.gamepad_count = 0
+Controller.gamepads = {}
 
 local __Gamepad = Class
 {
@@ -183,9 +183,9 @@ local __Gamepad = Class
 
   button_names =
   {
-    "a", "b", "x", "y", "back", "guide", "start", 
-    "leftstick", "leftshoulder", 
-    "rightstick", "rightshoulder", 
+    "a", "b", "x", "y", "back", "guide", "start",
+    "leftstick", "leftshoulder",
+    "rightstick", "rightshoulder",
     "dpup", "dpdown", "dpleft", "dpleft"
   },
 
@@ -207,8 +207,8 @@ local __Gamepad = Class
       self:addButton(name, function() return joystick:isGamepadDown(name) end)
     end
 
-    Controller.gamepad_count = Controller.gamepad_count + 1
-    self.index = Controller.gamepad_count
+    table.insert(Controller.gamepads, self)
+    self.index = #Controller.gamepads
   end,
 }
 __Gamepad:include(Controller)
@@ -221,30 +221,30 @@ Default keyboard controls
 --]]--
 
 local KEYBOARD = Controller()
-KEYBOARD:addAxis("leftx", 
+KEYBOARD:addAxis("leftx",
   function() return love.keyboard.isDown("right", "d") end,
   function() return love.keyboard.isDown("left", "q", "a") end)
-KEYBOARD:addAxis("lefty", 
+KEYBOARD:addAxis("lefty",
   function() return love.keyboard.isDown("down", "s") end,
   function() return love.keyboard.isDown("up", "z", "w") end)
 KEYBOARD.keyboard = true
 Controller.KEYBOARD = KEYBOARD
 
 local KEYBOARD_LEFT = Controller()
-KEYBOARD_LEFT:addAxis("leftx", 
+KEYBOARD_LEFT:addAxis("leftx",
   function() return love.keyboard.isDown("d") end,
   function() return love.keyboard.isDown("q", "a") end)
-KEYBOARD_LEFT:addAxis("lefty", 
+KEYBOARD_LEFT:addAxis("lefty",
   function() return love.keyboard.isDown("s") end,
   function() return love.keyboard.isDown("z", "w") end)
 KEYBOARD_LEFT.keyboard = true
 Controller.KEYBOARD_LEFT = KEYBOARD_LEFT
 
 local KEYBOARD_RIGHT = Controller()
-KEYBOARD_RIGHT:addAxis("leftx", 
+KEYBOARD_RIGHT:addAxis("leftx",
   function() return love.keyboard.isDown("right") end,
   function() return love.keyboard.isDown("left") end)
-KEYBOARD_RIGHT:addAxis("lefty", 
+KEYBOARD_RIGHT:addAxis("lefty",
   function() return love.keyboard.isDown("down") end,
   function() return love.keyboard.isDown("up") end)
 KEYBOARD_RIGHT.keyboard = true
