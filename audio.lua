@@ -18,11 +18,11 @@ local useful = require("unrequited/useful")
 local audio = { filenames = {} }
 
 -- the "normal" volume of the current music, between 0 and 1
-local _music_base_volume = 1      
+local _music_base_volume = 1
 -- the global multiplier of the music volumes
-local _music_global_volume = 1    
+local _music_global_volume = 1
 -- the global multiplier of the sound volumes
-local _sound_global_volume = 1    
+local _sound_global_volume = 1
 
 
 --[[---------------------------------------------------------------------------
@@ -47,8 +47,8 @@ function audio:load_sound(filepath, volume, n_sources)
   n_sources = (n_sources or 1)
   local filename = _getFilename(filepath)
   self[filename] = {}
-  for i = 1, n_sources do 
-    local new_source = self:load(filepath, "static") 
+  for i = 1, n_sources do
+    local new_source = self:load(filepath, "static")
     new_source:setVolume(volume or 1)
     self[filename][i] = new_source
   end
@@ -95,8 +95,8 @@ function audio:play_music(name, volume, loop)
 end
 
 function audio:play_sound(name, pitch_shift, x, y, fixed_pitch)
-  if not name then 
-    return 
+  if not name then
+    return
   end
 
   if self.filenames[name] then
@@ -110,24 +110,24 @@ function audio:play_sound(name, pitch_shift, x, y, fixed_pitch)
   end
   for _, src in ipairs(sources) do
     if src:isStopped() then
-      
+
       -- shift the pitch
       if pitch_shift and (pitch_shift ~= 0) then
         src:setPitch(1 + useful.signedRand(pitch_shift))
       elseif fixed_pitch then
         src:setPitch(fixed_pitch)
       end
-      
+
       -- use 3D sound
       if x and y then
         src:setPosition(x, y, 0)
       end
-      
+
       if not self.mute and not self.mute_sound then
         src:play()
         src:setVolume(src:getVolume() * _sound_global_volume)
       end
-      
+
       return src
     end
   end
@@ -142,11 +142,19 @@ function audio:set_sound_volume(v)
 	_sound_global_volume = v
 end
 
+function audio:get_sound_volume()
+	return _sound_global_volume
+end
+
 function audio:set_music_volume(v)
   _music_global_volume = v
 	if self.music then
 		self.music:setVolume(_music_base_volume * _music_global_volume)
 	end
+end
+
+function audio:get_music_volume()
+	return _music_global_volume
 end
 
 function audio:toggle_music()
@@ -159,15 +167,14 @@ function audio:toggle_music()
   end
 end
 
-
 --[[---------------------------------------------------------------------------
 PLAYLISTS
 --]]--
 
 function audio:add_to_playlist(filename, volume)
   self:load_music(filename)
-  if not self.playlist then 
-    self.playlist = {} 
+  if not self.playlist then
+    self.playlist = {}
   end
   table.insert(self.playlist, { name = filename, volume = volume })
 end
