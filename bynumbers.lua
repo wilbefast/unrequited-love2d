@@ -97,14 +97,24 @@ local _paint = function(args)
 			end
 		end
 	end
+  return images
 end
 
 local _normalise = function(args)
 	local images = args.images or args
+  local fail_r = args.fail_r
+  local fail_g = args.fail_g
+  local fail_b = args.fail_b
+  local fail_a = args.fail_a
 	local log = args.log
+  local result = {}
 	for palette_name, palette in pairs(_palettes) do
 		for _, image in ipairs(images) do
-			if string.find(image.name, palette_name) then
+			if not string.find(image.name, palette_name) then
+        -- no palette to normalise: keep original the image
+        table.insert(result, image)
+      else
+        -- discard the template if a palette is to be used
         local new_image_name = string.gsub(image.name, "_"..palette_name, "")
         if log then
           log:write("generating", new_image_name)
@@ -127,13 +137,14 @@ local _normalise = function(args)
             end
           end
         end)
-        table.insert(images, {
+        table.insert(result, {
           name = new_image_name,
           tex = love.graphics.newImage(new_image_data)
         })
       end
     end
 	end
+  return result
 end
 
 return {
