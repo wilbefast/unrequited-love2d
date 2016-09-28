@@ -45,7 +45,6 @@ local _addPalette = function(path)
 		return r, g, b, a
 	end)
 
-
 	_palettes[name] = colours
 end
 
@@ -88,7 +87,7 @@ local _paint = function(args)
 									return _stringToColour(other_hash)
 								end
 							end)
-							table.insert(images, { 
+							table.insert(images, {
 								name = new_image_name,
 								tex = love.graphics.newImage(new_image_data)
 							})
@@ -100,8 +99,45 @@ local _paint = function(args)
 	end
 end
 
+local _normalise = function(args)
+	local images = args.images or args
+	local log = args.log
+	for palette_name, palette in pairs(_palettes) do
+		for _, image in ipairs(images) do
+			if string.find(image.name, palette_name) then
+        local new_image_name = string.gsub(image.name, "_"..palette_name, "")
+        if log then
+          log:write("generating", new_image_name)
+        end
+
+        local w, h = image.tex:getDimensions()
+        local new_image_data = love.image.newImageData(w, h)
+        new_image_data:paste(image.tex:getData(), 0, 0, 0, 0, w, h)
+        new_image_data:mapPixel(function(x, y, r, g, b, a)
+          if a == 0 then
+            return r, g, b, a
+          else
+            local hash = _colourToString(r, g, b, a)
+            local index = palette[hash]
+            if not index then
+              return fail_r or r, fail_g or g, fail_b or b, fail_a or a
+            else
+              local n_index = (index / #palette)*255
+              return n_index, n_index, n_index, a
+            end
+          end
+        end)
+        table.insert(images, {
+          name = new_image_name,
+          tex = love.graphics.newImage(new_image_data)
+        })
+      end
+    end
+	end
+end
 
 return {
 	paint = _paint,
+  normalise = _normalise,
 	addPalette = _addPalette
 }
