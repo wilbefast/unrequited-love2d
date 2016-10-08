@@ -1,6 +1,5 @@
 local _coroutines = {}
 
-
 local _add = function(c)
 	table.insert(_coroutines, c)
 end
@@ -29,9 +28,10 @@ end
 local _activeWaitThen = function(duration, progress, f)
   babysitter.add(coroutine.create(function(dt)
     local t = 0
-    while t < duration do
+		local interrupt = false
+    while not interrupt and t < duration do
       t = t + dt
-      progress(t / duration)
+      interrupt = progress(t / duration)
       coroutine.yield()
     end
     f()
@@ -51,13 +51,14 @@ end
 
 local _periodically = function(period, f)
 	babysitter.add(coroutine.create(function(dt)
-		while _coroutines do
+		local interrupt = false
+		while not interrupt and _coroutines do
 	   	local t = 0
 	   	while t < period do
 	   		t = t + dt
 	   		coroutine.yield()
 	   	end
-	   	f()
+	   	interrupt = f()
    	end
  	end))
 end
