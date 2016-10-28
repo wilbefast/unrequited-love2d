@@ -36,7 +36,7 @@ local __UPDATE_LIST = { }
 local __DRAW_LIST = { }
 local __COLLISION_LIST = { }
 local __NEW_INSTANCES = { }
-    
+
 -- identifiers
 local __NEXT_ID = 1
 
@@ -46,7 +46,7 @@ local __TYPE = { }
 local GameObject = Class
 {
 
-      
+
   -- constructor
   init = function(self, x, y, w_or_r, optional_h)
     -- save attributes
@@ -60,9 +60,9 @@ local GameObject = Class
     self.y        = y
     self.prevx    = self.x
     self.prevy    = self.y
-    
-    table.insert(__NEW_INSTANCES, self) 
-    
+
+    table.insert(__NEW_INSTANCES, self)
+
     -- assign identifier
     self.id = __NEXT_ID
     __NEXT_ID = __NEXT_ID + 1
@@ -70,9 +70,9 @@ local GameObject = Class
     -- assign type if one was not specified
     self.type = (self.type or __TYPE["Undefined"])
     self.name = self:typename() .. '(' .. tostring(self.id) .. ')'
-    
+
   end,
-  
+
   -- default attribute values
   dx = 0,
   dy = 0
@@ -94,8 +94,13 @@ function GameObject:typename()
   return __TYPE[self.type]
 end
 
-function GameObject:isType(typename)
-  return (self.type == __TYPE[typename])
+function GameObject:isType(...)
+  for i, typename in ipairs({...}) do
+    if self.type == __TYPE[typename] then
+      return true
+    end
+  end
+  return false
 end
 
 --[[------------------------------------------------------------
@@ -117,13 +122,13 @@ function GameObject.loadFromObject(lua)
 				end
 			end
 		end
-	end 
+	end
 end
 
 function GameObject.loadFromFile(filename)
   local fimport, err = love.filesystem.load( filename )
-  if err then 
-    return err 
+  if err then
+    return err
   end
   GameObject.loadFromObject(fimport())
 end
@@ -133,11 +138,11 @@ Modification
 --]]--
 
 function GameObject.purgeAll()
-	useful.map(__UPDATE_LIST, 
+	useful.map(__UPDATE_LIST,
 		function(object)
 			object.purge = true
 		end)
-  useful.map(__NEW_INSTANCES, 
+  useful.map(__NEW_INSTANCES,
     function(object)
       object.purge = true
     end)
@@ -179,10 +184,10 @@ function GameObject.flushCreatedObjects(oblique)
 
       -- add to collision list
       local _nullf = (function() end)
-      if 
+      if
         (new_object.w and new_object.h)
-        or new_object.r 
-        or new_object.eventCollision 
+        or new_object.r
+        or new_object.eventCollision
       then
         table.insert(__COLLISION_LIST, new_object)
         if not new_object.eventCollision then
@@ -353,7 +358,7 @@ function GameObject.countSuchThat(predicate)
   local count = 0
   for i, object in ipairs(__UPDATE_LIST) do
     if  not object.purge and predicate(object) then
-      count = count + 1 
+      count = count + 1
     end
   end
   return count
@@ -364,7 +369,7 @@ function GameObject.countOfType(typename)
   local count = 0
   for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and (object.type == t) then
-      count = count + 1 
+      count = count + 1
     end
   end
   return count
@@ -376,7 +381,7 @@ function GameObject.countOfTypeSuchThat(typename, predicate)
   local count = 0
   for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and (object.type == t) and ((not predicate) or predicate(object)) then
-      count = count + 1 
+      count = count + 1
     end
   end
   return count
@@ -628,7 +633,7 @@ end
 
 function GameObject:snap_from_collision(dx, dy, collisiongrid, max, type)
   local i = 0
-  while collisiongrid:objectCollision(self, self.x, self.y, type) 
+  while collisiongrid:objectCollision(self, self.x, self.y, type)
   and (not max or i < max)  do
     self.x = self.x + dx
     self.y = self.y + dy
@@ -641,7 +646,7 @@ function GameObject:snap_to_collision(dx, dy, collisiongrid, max, type)
     return
   end
   local i = 0
-  while not collisiongrid:objectCollision(self, self.x + dx, self.y + dy, type) 
+  while not collisiongrid:objectCollision(self, self.x + dx, self.y + dy, type)
         and (not max or i < max)  do
     self.x = self.x + dx
     self.y = self.y + dy
@@ -666,7 +671,7 @@ function GameObject:isColliding(other)
   	-- move origin to centre of object
     self.x, self.y, other.x, other.y = self.x - self.w/2, self.y - self.h/2, other.x - other.w/2, other.y - other.h/2
 
-    -- horizontally seperate ? 
+    -- horizontally seperate ?
     local v1x = (other.x + other.w) - self.x
     local v2x = (self.x + self.w) - other.x
     if useful.sign(v1x) ~= useful.sign(v2x) then
@@ -678,10 +683,10 @@ function GameObject:isColliding(other)
     if useful.sign(v1y) ~= useful.sign(v2y) then
       result = false --! don't return here as we need to move back the origin
     end
-    
+
   	-- move origin back to top-left corner
     self.x, self.y, other.x, other.y = self.x + self.w/2, self.y + self.h/2, other.x + other.w/2, other.y + other.h/2
-    
+
   	-- all done
   	return result
   end
@@ -744,16 +749,16 @@ end
 
 function  GameObject:isInsideBoundary(bx, by, bw, bh)
   local w, h = self.r or self.w*0.5 or 0, self.r or self.w*0.5 or 0
-  if self.x + w > bx + bw then 
+  if self.x + w > bx + bw then
     return false
-  elseif self.x - w < bx then 
+  elseif self.x - w < bx then
     return false
-  elseif self.y + h > by + bh then 
+  elseif self.y + h > by + bh then
     return false
-  elseif self.y - h > by then 
+  elseif self.y - h > by then
     return false
-  else 
-    return true 
+  else
+    return true
   end
 end
 
@@ -821,10 +826,10 @@ Game loop
 --]]
 
 function GameObject:update(dt)
-  
+
   -- object may have several fisix settings
   local fisix = (self.fisix or self)
-  
+
   -- gravity
   if fisix.GRAVITY and self.airborne then
     self.dy = self.dy + fisix.GRAVITY*dt
@@ -840,10 +845,10 @@ function GameObject:update(dt)
   if fisix.FRICTION and ((self.dx ~= 0) or (self.dy ~= 0)) then
 
     local normed_dx, normed_dy, original_speed = Vector.normalise(self.dx, self.dy)
-    local new_speed = original_speed / (math.pow(fisix.FRICTION, dt)) 
+    local new_speed = original_speed / (math.pow(fisix.FRICTION, dt))
     self.dx, self.dy = normed_dx*new_speed, normed_dy*new_speed
   end
-  
+
   -- terminal velocity
   local abs_dx, abs_dy = math.abs(self.dx), math.abs(self.dy)
   if (self.dx ~= 0) and fisix.MAX_DX and (abs_dx > fisix.MAX_DX) then
@@ -859,19 +864,19 @@ function GameObject:update(dt)
       self.dx, self.dy = dx*fisix.MAX_SPEED, dy*fisix.MAX_SPEED
     end
   end
-  
+
   -- clamp less than epsilon inertia to 0
   if math.abs(self.dx) < 0.01 then self.dx = 0 end
   if math.abs(self.dy) < 0.01 then self.dy = 0 end
-  
+
   if self.COLLISIONGRID then
 
     local w, h = self.w or self.r or 0, self.h or self.r or 0
-    
+
     local collisiongrid = self.COLLISIONGRID
     -- check if we're on the ground
     if fisix.GRAVITY then
-      self.airborne = 
+      self.airborne =
         ((not collisiongrid:pixelCollision(self.x, self.y + h + 1, collide_type)
         and (not collisiongrid:pixelCollision(self.x + w, self.y + h + 1, collide_type))))
       if not self.airborne and self.dy > 0 then
@@ -881,7 +886,7 @@ function GameObject:update(dt)
         self.dy = 0
       end
     end
-    
+
 
     -- move HORIZONTALLY FIRST
     if self.dx ~= 0 then
@@ -891,7 +896,7 @@ function GameObject:update(dt)
       -- is new x in collision ?
       if collisiongrid:objectCollision(self, new_x, self.y) then
         -- move as far as possible towards new position
-        self:snap_to_collision(useful.sign(self.dx), 0, 
+        self:snap_to_collision(useful.sign(self.dx), 0,
                           collisiongrid, math.abs(self.dx))
         self.dx = 0
       else
@@ -899,7 +904,7 @@ function GameObject:update(dt)
         self.x = new_x
       end
     end
-    
+
     -- move the object VERTICALLY SECOND
     if self.dy ~= 0 then
       local move_y = self.dy*dt
@@ -927,17 +932,17 @@ function GameObject:debugDraw()
   end
 end
 
-GameObject.DEBUG_VIEW = 
+GameObject.DEBUG_VIEW =
 {
   draw = function(self, target)
     if target.r then
       scaling:circle("line",
         target.x, target.y, target.r)
     elseif target.w and target.h then
-      scaling:rectangle("line", 
+      scaling:rectangle("line",
         target.x - target.w*0.5, target.y - target.h*0.5, target.w, target.h)
     end
-    
+
   end
 }
 
