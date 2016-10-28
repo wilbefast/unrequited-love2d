@@ -15,6 +15,15 @@ Lesser General Public License for more details.
 
 local useful = { }
 
+function useful.any(objects, f)
+  for i, obj in ipairs(objects) do
+    if f(obj, i) then
+      return obj
+    end
+  end
+  return nil
+end
+
 -- map a set of functions to a set of objects
 function useful.map(objects, ...)
   local args = useful.packArgs(...)
@@ -24,7 +33,7 @@ function useful.map(objects, ...)
     local obj = objects[oi]
     -- check if the object needs to be removed
     if obj.purge then
-      if obj.onPurge then 
+      if obj.onPurge then
         obj:onPurge()
       end
       table.remove(objects, oi)
@@ -83,7 +92,7 @@ end
 
 -- trinary operator
 function useful.tri(cond, a, b)
-  if cond then 
+  if cond then
     return a
   else
     return b
@@ -100,7 +109,7 @@ function useful.absminus(v, minus)
 end
 
 -- function missing from math
-function useful.round(x, n) 
+function useful.round(x, n)
   if n then
     -- round to nearest n
     return useful.round(x / n) * n
@@ -137,9 +146,9 @@ end
 
 -- sign of a number: -1, 0 or 1
 function useful.sign(x)
-  if x > 0 then 
-    return 1 
-  elseif x < 0 then 
+  if x > 0 then
+    return 1
+  elseif x < 0 then
     return -1
   else
     return 0
@@ -193,7 +202,7 @@ function useful.lerp(a, b, amount)
 end
 
 function useful.printf(text, x, y, angle, maxwidth)
-  
+
   maxwidth = (maxwidth or 0)/(SCALE_MIN or 1)
 
   love.graphics.push()
@@ -310,7 +319,7 @@ local __dashline = 3
 function useful.oval(mode, ox, oy, w, h)
   if mode == "fill" then mode = __fill
   elseif mode == "line" then mode = __line
-  elseif mode == "dashfill" then mode = __dashfill 
+  elseif mode == "dashfill" then mode = __dashfill
   elseif mode == "dashline" then mode = __dashline
   else
     print("invalid mode '" .. mode .. "' passed to useful.oval")
@@ -523,8 +532,8 @@ function useful.ktemp(temperature)
       b = 0
     else
       b = temperature - 10
-      b = 138.5177312231 * math.log(b) - 305.0447927307 
-      if b < 0 then 
+      b = 138.5177312231 * math.log(b) - 305.0447927307
+      if b < 0 then
         b = 0
       elseif b > 255 then
         b = 255
