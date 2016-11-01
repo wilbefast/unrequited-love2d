@@ -44,6 +44,9 @@ function audio:load(filepath, type)
 end
 
 function audio:load_sound(filepath, volume, n_sources)
+  if self.DRY_RUN then
+    return nil
+  end
   n_sources = (n_sources or 1)
   local filename = _getFilename(filepath)
   self[filename] = {}
@@ -55,6 +58,9 @@ function audio:load_sound(filepath, volume, n_sources)
 end
 
 function audio:load_sounds(base_filepath, n_files, volume, n_sources)
+  if self.DRY_RUN then
+    return nil
+  end
   n_sources = (n_sources or 1)
   local base_filename = _getFilename(base_filepath)
   local filenames = {}
@@ -68,6 +74,9 @@ end
 
 
 function audio:load_music(filepath)
+  if self.DRY_RUN then
+    return nil
+  end
   self[_getFilename(filepath)] = self:load(filepath, "stream")
 end
 
@@ -76,7 +85,16 @@ end
 PLAYING
 --]]--
 
+function audio:stop_music()
+  if self.music then
+    self.music:stop()
+  end
+end
+
 function audio:play_music(name, volume, loop)
+  if self.DRY_RUN then
+    return
+  end
   _music_base_volume = (volume or 1)
 	volume = _music_base_volume * _music_global_volume
   if loop == nil then loop = true end
@@ -95,6 +113,10 @@ function audio:play_music(name, volume, loop)
 end
 
 function audio:play_sound(name, pitch_shift, x, y, fixed_pitch)
+  if self.DRY_RUN then
+    return
+  end
+
   if not name then
     return
   end
