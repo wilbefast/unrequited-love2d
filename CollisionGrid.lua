@@ -31,12 +31,12 @@ Initialisation
 local CollisionGrid = Class
 {
   init = function(self, tileClass, tilew, tileh, w, h, x, y)
-  
+
     self.x, self.y = x or 0, y or 0
 
     -- grab the size of the tiles
     self.tilew, self.tileh = tilew, tileh
-  
+
     -- grab the size of the map
     if w and h then
       self.w, self.h = w, h
@@ -69,7 +69,7 @@ local CollisionGrid = Class
     local directionsX = { "NW", "NE", "SW", "SE" }
     for col = 1, self.w do
       for row = 1, self.h do
-        local t = self.tiles[col][row] 
+        local t = self.tiles[col][row]
         t.neighbours8 = self:getNeighbours8(t)
         t.neighbours4 = self:getNeighbours4(t)
         t.neighboursX = self:getNeighboursX(t)
@@ -146,6 +146,34 @@ function CollisionGrid:map(f)
 end
 
 --[[----------------------------------------------------------------------------
+Query
+--]]--
+
+function CollisionGrid:count(f)
+  local count = 0
+  for col = 1, self.w do
+    for row = 1, self.h do
+      if f(self.tiles[col][row], col, row) then
+        count = count + 1
+      end
+    end
+  end
+  return count
+end
+
+function CollisionGrid:any(f)
+  for col = 1, self.w do
+    for row = 1, self.h do
+      if f(self.tiles[col][row], col, row) then
+        return true
+      end
+    end
+  end
+  return false
+end
+
+
+--[[----------------------------------------------------------------------------
 Export to file
 --]]--
 
@@ -179,8 +207,8 @@ end
 function CollisionGrid:saveToFile(filename, tile_toString)
   -- open file, error check
   local file, err = io.open(filename, "wb")
-  if err then 
-    return err 
+  if err then
+    return err
   end
   file:write("return " .. self:toString(tile_toString))
   -- all done, clean up
@@ -202,8 +230,8 @@ end
 
 function CollisionGrid:loadFromFile(filename, tileClass)
   local fimport, err = loadfile(filename)
-  if err then 
-    return err 
+  if err then
+    return err
   end
   self:loadFromObject(fimport())
 end
@@ -280,16 +308,16 @@ end
 Game loop
 --]]--
 
-function CollisionGrid:draw(view) 
+function CollisionGrid:draw(view)
 
   local start_col, start_row, end_col, end_row = 1, 1, self.w, self.h
   if view then
     start_col = math.max(1, math.floor(view.x / self.tilew))
-    end_col = math.min(self.w, 
+    end_col = math.min(self.w,
                 start_col + math.ceil(view.w / self.tilew))
-    
+
     start_row = math.max(1, math.floor(view.y / self.tileh))
-    end_row = math.min(self.h, 
+    end_row = math.min(self.h,
                 start_row + math.ceil(view.h / self.tileh))
   end
 
@@ -361,10 +389,10 @@ Avoid array out-of-bounds exceptions
 --]]--
 
 function CollisionGrid:validGridPos(col, row)
-  return (col >= 1 
+  return (col >= 1
       and row >= 1
-      and col <= self.w 
-      and row <= self.h) 
+      and col <= self.w
+      and row <= self.h)
 end
 
 function CollisionGrid:validPixelPos(x, y)
@@ -404,10 +432,10 @@ function CollisionGrid:objectCollision(object, x, y)
   x = (x or go.x)
   y = (y or go.y)
   local w, h = object.w or object.r or 0, object.h or object.r or 0
-  
+
   -- rectangle collision mask, origin is at the top-left
-  return (self:pixelCollision(x, y, object) 
-      or  self:pixelCollision(x + w, y, object) 
+  return (self:pixelCollision(x, y, object)
+      or  self:pixelCollision(x + w, y, object)
       or  self:pixelCollision(x, y + h, object)
       or  self:pixelCollision(x + w, y + h, object))
 end
@@ -427,8 +455,8 @@ end
 local __setPathStatePrevious = function(pathState, previousPathState, cost, object)
   pathState.previousPathState = previousPathState
   pathState.currentCost = previousPathState.currentCost + (cost or 1)
-  pathState.acceptNonPathable = (previousPathState.acceptNonPathable 
-    and pathState.currentTile.isPathable 
+  pathState.acceptNonPathable = (previousPathState.acceptNonPathable
+    and pathState.currentTile.isPathable
     and not pathState.currentTile:isPathable(object))
   if pathState.acceptNonPathable then
     pathState.currentCost = pathState.currentCost*2
@@ -504,7 +532,7 @@ local __expandPathState = function(pathState, allStates, openStates, object, cos
 
   -- adjascent
   for _, neighbourTile in ipairs(curr.neighbours4) do
-    if neighbourTile then 
+    if neighbourTile then
       ___expandTo(neighbourTile, costFunction(neighbourTile, 1))
     end
   end
