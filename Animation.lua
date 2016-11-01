@@ -33,8 +33,7 @@ Initialisation
 local Animation = Class
 {
   init = function(self, args)
-  
-  
+
     -- offset of the animation strip within the image
     local strip_offx, strip_offy = (args.strip_offx or 0), (args.strip_offy or 0)
 
@@ -52,23 +51,23 @@ local Animation = Class
       self.img = args.fudge.img
       local quad_x, quad_y, quad_w, quad_h = self.fudge.quad:getViewport()
       strip_offx, strip_offy = strip_offx + quad_x, strip_offy + quad_y
-      frame_w, frame_h = (args.frame_w or (quad_w / self.n_frames)), 
+      frame_w, frame_h = (args.frame_w or (quad_w / self.n_frames)),
         (args.frame_h or quad_h)
     else
       self.img = args.img
-      frame_w, frame_h = (args.frame_w or (args.img:getWidth() / self.n_frames)), 
+      frame_w, frame_h = (args.frame_w or (args.img:getWidth() / self.n_frames)),
         (args.frame_w or args.img:getHeight())
     end
-    
+
     -- mirroring
     self.scale_x, self.scale_y = (args.scale_x or 1), (args.scale_y or 1)
 
     self.quads= {}
     for i = 1, self.n_frames do
-      self.quads[i] = love.graphics.newQuad(strip_offx + (i-1)*frame_w, strip_offy, 
+      self.quads[i] = love.graphics.newQuad(strip_offx + (i-1)*frame_w, strip_offy,
           frame_w, frame_h, self.img:getWidth(), self.img:getHeight())
     end
-    
+
     -- frame size can be useful for lookup even if anim no longer needs it
     self.frame_w, self.frame_h = frame_w, frame_h
 
@@ -76,19 +75,21 @@ local Animation = Class
     self.frame_offx, self.frame_offy = args.frame_offx, args.frame_offy
   end,
 }
-  
-  
+
+
 --[[------------------------------------------------------------
 Game loop
 --]]
-  
+
 function Animation:draw(x, y, subimage, scale_x, scale_y, frame_offx, frame_offy, angle)
   if subimage then
     subimage = math.min(self.n_frames, math.floor(subimage))
   else
     subimage = 1
-  end  
-  
+  end
+
+  x, y = math.floor(x), math.floor(y)
+
   scale_x = (scale_x or self.scale_x)
   scale_y = (scale_y or self.scale_y)
   frame_offx = (frame_offx or self.frame_offx)
@@ -107,7 +108,7 @@ end
 --[[------------------------------------------------------------
 Query
 --]]
-  
+
 function Animation:frameAtPercent(p)
   if p > 1 then p = 1 elseif p < 0 then p = 0 end
   return (((self.n_frames-1) * p) + 1)
