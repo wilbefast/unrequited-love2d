@@ -73,6 +73,11 @@ local Animation = Class
 
     -- not all animation have the centre in the same place
     self.frame_offx, self.frame_offy = args.frame_offx, args.frame_offy
+
+    -- possible to use fudge without batching
+    if args.no_batch then
+      self.no_batch = true
+    end
   end,
 }
 
@@ -95,7 +100,7 @@ function Animation:draw(x, y, subimage, scale_x, scale_y, frame_offx, frame_offy
   frame_offx = (frame_offx or self.frame_offx)
   frame_offy = (frame_offy or self.frame_offy)
 
-  if self.fudge then
+  if self.fudge and not self.no_batch then
     fudge.current.batch:add(self.quads[subimage], x, y, angle or self.angle or 0,
         scale_x, scale_y, frame_offx, frame_offy)
   else
