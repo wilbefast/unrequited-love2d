@@ -172,6 +172,33 @@ function CollisionGrid:any(f)
   return false
 end
 
+function CollisionGrid:most(f)
+  local best, best_value = nil, -math.huge
+  for col = 1, self.w do
+    for row = 1, self.h do
+      local tile = self.tiles[col][row]
+      local tile_value = f(tile, col, row)
+      if tile_value > best_value then
+        best, best_value = tile, tile_value
+      end
+    end
+  end
+  return best, best_value
+end
+
+function CollisionGrid:least(f)
+  local best, best_value = nil, math.huge
+  for col = 1, self.w do
+    for row = 1, self.h do
+      local tile = self.tiles[col][row]
+      local tile_value = f(tile, col, row)
+      if tile_value < best_value then
+        best, best_value = tile, tile_value
+      end
+    end
+  end
+  return best, best_value
+end
 
 --[[----------------------------------------------------------------------------
 Export to file
