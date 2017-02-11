@@ -58,6 +58,9 @@ function audio:load_sound(filepath, volume, n_sources)
 end
 
 function audio:load_sounds(base_filepath, n_files, volume, n_sources)
+  if n_files <= 1 then
+    return audio:load_sound(base_filepath, volume, n_sources)
+  end
   if self.DRY_RUN then
     return nil
   end
