@@ -32,16 +32,16 @@ local NinePatch = Class
 {
   init = function(self, args)
   	self.ne = args.northEast.img
-  	self.ne_offx = args.northEast.offx 
+  	self.ne_offx = args.northEast.offx
   	self.ne_offy = args.northEast.offy
   	self.nw = args.northWest.img
-  	self.nw_offx = args.northWest.offx 
+  	self.nw_offx = args.northWest.offx
   	self.nw_offy = args.northWest.offy
   	self.se = args.southEast.img
-  	self.se_offx = args.southEast.offx 
+  	self.se_offx = args.southEast.offx
   	self.se_offy = args.southEast.offy
   	self.sw = args.southWest.img
-  	self.sw_offx = args.southWest.offx 
+  	self.sw_offx = args.southWest.offx
   	self.sw_offy = args.southWest.offy
   	self.line = args.line.img
   	self.line_offx = args.line.offx
@@ -51,12 +51,12 @@ local NinePatch = Class
   	self.line_quad = love.graphics.newQuad(0, 0, self.line_w, self.line_h, self.line_w, self.line_h)
   end,
 }
-  
-  
+
+
 --[[------------------------------------------------------------
 Game loop
 --]]
-  
+
 function NinePatch:draw(x, y, w, h)
 	-- horizontal
 	local line_x = 0
@@ -87,7 +87,7 @@ function NinePatch:draw(x, y, w, h)
 	end
 	if self.line.quad then
 		local qx, qy, qw, qh = self.line.quad:getViewport()
-		self.line.quad:setViewport(qx, qy, w - line_y, qh)
+		self.line.quad:setViewport(qx, qy, h - line_y, qh)
 		love.graphics.draw(self.line, x, y + line_y, math.pi/2, 1, 1, self.line_offx, self.line_offy)
 		love.graphics.draw(self.line, x + w, y + line_y, math.pi/2, 1, 1, self.line_offx, self.line_offy)
 		self.line.quad:setViewport(qx, qy, qw, qh)
