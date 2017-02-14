@@ -141,10 +141,16 @@ function GameObject.purgeAll()
 	useful.map(__UPDATE_LIST,
 		function(object)
 			object.purge = true
+      if object.onPurge then
+        object:onPurge()
+      end
 		end)
   useful.map(__NEW_INSTANCES,
     function(object)
       object.purge = true
+      if object.onPurge then
+        object:onPurge()
+      end
     end)
   __UPDATE_LIST = {}
   __COLLISION_LIST = {}
