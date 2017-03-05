@@ -104,6 +104,13 @@ function NinePatch:draw(x, y, w, h)
 	love.graphics.draw(self.se, x + w, y + h, 0, 1, 1, self.se_offx, self.se_offy)
 end
 
+function NinePatch:drawWithBackground(x, y, w, h, r, g, b)
+  love.graphics.setColor(r, g, b)
+  love.graphics.rectangle("fill", x, y, w, h)
+  love.graphics.setColor(255, 255, 255)
+  self:draw(x, y, w, h)
+end
+
 --[[------------------------------------------------------------
 EXPORT
 --]]------------------------------------------------------------
