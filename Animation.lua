@@ -40,6 +40,9 @@ local Animation = Class
     -- remember frame number to prevent array out-of-bounds
     self.n_frames = (args.n_frames or 1)
 
+    -- animation speed multiplier
+    self.speed = (args.speed or 1)
+
     -- reference the image differently depending on whether or not we're reading from a sprite batch
     local frame_w, frame_h
     if args.fudge then

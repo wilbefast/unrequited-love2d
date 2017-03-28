@@ -34,8 +34,8 @@ local AnimationView = Class
   init = function(self, anim, speed, frame, offx, offy, sizex, sizey)
     self.anim = anim
     self.speed = (speed or 0.0)
-    
-    self.frame = useful.clamp(frame or math.random(self.anim.n_frames), 
+
+    self.frame = useful.clamp(frame or math.random(self.anim.n_frames),
                               1, self.anim.n_frames)
     self.offx = offx
     self.offy = offy
@@ -45,12 +45,12 @@ local AnimationView = Class
     self.flipy = 1
   end,
 }
-  
-  
+
+
 --[[------------------------------------------------------------
 Game loop
 --]]
-    
+
 function AnimationView:draw(object, x, y, angle, sizex, sizey)
   if self.hide then
     return
@@ -63,7 +63,7 @@ end
 
 function AnimationView:update(dt)
   local prev_frame = math.floor(self.frame)
-  self.frame = self.frame + self.speed*dt
+  self.frame = self.frame + self.speed*dt*self.anim.speed
   local new_frame = math.floor(self.frame)
   if prev_frame ~= new_frame then
     self.new_frame = new_frame
@@ -107,7 +107,11 @@ end
 function AnimationView:setAnimation(anim)
   if anim and (self.anim ~= anim) then
     self.anim = anim
-    self.frame = 1
+    if anim.speed >= 0 then
+      self.frame = self.anim:frameAtPercent(0)
+    else
+      self.frame = self.anim:frameAtPercent(1)
+    end
   end
 end
 
@@ -120,7 +124,7 @@ function AnimationView:getAnimationProgress()
 end
 
 function AnimationView:getTimeLeft()
-  return (self.anim.n_frames - self.frame)/self.speed
+  return (self.anim.n_frames - self.frame)/self.speed/self.anim.speed
 end
 
 --[[------------------------------------------------------------
