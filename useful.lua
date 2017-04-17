@@ -544,5 +544,22 @@ function useful.ktemp(temperature)
   return r, g, b
 end
 
+useful.format_time = function(time, h_sep, m_sep, s_sep)
+  h_sep = h_sep or ":"
+  m_sep = m_sep or ":"
+  s_sep = s_sep or ""
+  local hours = math.floor(time/60/60)
+  time = time - hours*60*60
+  local minutes = math.floor(time/60)
+  time = time - minutes*60
+  local seconds = math.floor(time)
+  if hours > 0 then
+    return string.format("%02d%s%02f%s%02d%s", hours, h_sep, minutes, m_sep, seconds, s_sep)
+  elseif minutes > 0 then
+    return string.format("%02d%s%02d%s", minutes, m_sep, seconds, s_sep)
+  else
+    return string.format("%02d%s", seconds, s_sep)
+  end
+end
 
 return useful
