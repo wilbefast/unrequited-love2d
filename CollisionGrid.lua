@@ -145,6 +145,21 @@ function CollisionGrid:map(f)
   end
 end
 
+function CollisionGrid:mapPixelCircle(cx, cy, radius, f)
+  local centreTile = self:gridToTile(math.floor((cx - self.x) / self.tilew) + 1, math.floor((cy - self.y) / self.tileh) + 1)
+  if centreTile then
+    f(centreTile, 0, cx, cy)
+  end
+  for angle = 0, 2*math.pi, math.pi*0.25 do
+    local x, y = cx + math.cos(angle)*radius, cy + math.sin(angle)*radius
+    local tile = self:gridToTile(math.floor((x - self.x) / self.tilew) + 1, math.floor((y - self.y) / self.tileh) + 1)
+    if tile then
+      f(tile, angle, x, y)
+    end
+  end
+end
+
+
 --[[----------------------------------------------------------------------------
 Query
 --]]--
