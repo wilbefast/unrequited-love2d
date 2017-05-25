@@ -35,6 +35,7 @@ function useful.map(objects, ...)
     if obj.purge then
       if obj.onPurge then
         obj:onPurge()
+        obj.onPurge = false
       end
       table.remove(objects, oi)
     else
@@ -58,6 +59,7 @@ function useful.purge(objects)
     if o.purge then
       if o.onPurge then
         o:onPurge()
+        o.onPurge = false
       end
       table.remove(objects, i)
     else
