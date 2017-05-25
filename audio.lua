@@ -123,6 +123,21 @@ function audio:play_music(id, volume, loop)
   self.music.stream:setVolume(volume)
 end
 
+function audio:is_playing_music(id)
+  if not self.music then
+    return false
+  elseif not id then
+    return self.music and not self.music.stream:isStopped()
+  else
+    local music = self[id]
+    if not music then
+      return false
+    else
+      return self.music == music
+    end
+  end
+end
+
 function audio:play_sound(name, pitch_shift, x, y, fixed_pitch)
   if self.DRY_RUN then
     return
