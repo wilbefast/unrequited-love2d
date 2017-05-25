@@ -17,8 +17,6 @@ local useful = require("unrequited/useful")
 
 local audio = { filenames = {} }
 
--- the "normal" volume of the current music, between 0 and 1
-local _music_base_volume = 1
 -- the global multiplier of the music volumes
 local _music_global_volume = 1
 -- the global multiplier of the sound volumes
@@ -76,11 +74,20 @@ function audio:load_sounds(base_filepath, n_files, volume, n_sources)
 end
 
 
-function audio:load_music(filepath)
+function audio:load_music(args)
   if self.DRY_RUN then
     return nil
   end
-  self[_getFilename(filepath)] = self:load(filepath, "stream")
+  local filepath = args.filepath
+  local id = args.id or _getFilename(filepath)
+  local result = {
+    stream = self:load(filepath, "stream"),
+    volume = args.volume or 1,
+    followed_by = args.followed_by or nil,
+    loop = (args.loop == nil and true) or false
+  }
+  self[id] = result
+  return result
 end
 
 
@@ -90,29 +97,30 @@ PLAYING
 
 function audio:stop_music()
   if self.music then
-    self.music:stop()
+    self.music.stream:stop()
   end
 end
 
-function audio:play_music(name, volume, loop)
+function audio:play_music(id, volume, loop)
   if self.DRY_RUN then
     return
   end
-  _music_base_volume = (volume or 1)
-	volume = _music_base_volume * _music_global_volume
-  if loop == nil then loop = true end
-  local new_music = self[name]
-  if (self.music and self.music:isStopped()) or (new_music ~= self.music) then
+  local new_music = self[id]
+  volume = (volume or new_music.volume or 1) * _music_global_volume
+  if loop == nil then
+    loop = not new_music.followed_by and new_music.loop
+  end
+  if (self.music and self.music.stream:isStopped()) or (new_music ~= self.music) then
     if self.music then
-      self.music:stop()
+      self.music.stream:stop()
     end
-    new_music:setLooping(loop)
+    new_music.stream:setLooping(loop)
     if not self.mute and not self.mute_music then
-      new_music:play()
+      new_music.stream:play()
     end
     self.music = new_music
   end
-  self.music:setVolume(volume)
+  self.music.stream:setVolume(volume)
 end
 
 function audio:play_sound(name, pitch_shift, x, y, fixed_pitch)
@@ -174,7 +182,7 @@ end
 function audio:set_music_volume(v)
   _music_global_volume = v
 	if self.music then
-		self.music:setVolume(_music_base_volume * _music_global_volume)
+		self.music.stream:setVolume(self.music.volume * _music_global_volume)
 	end
 end
 
@@ -185,10 +193,10 @@ end
 function audio:toggle_music()
   if not self.music then
     return
-  elseif self.music:isPaused() then
-    self.music:resume()
+  elseif self.music.stream:isPaused() then
+    self.music.stream:resume()
   else
-    self.music:pause()
+    self.music.stream:pause()
   end
 end
 
@@ -210,8 +218,10 @@ ACTIVE WAIT
 --]]--
 
 function audio:update(dt)
-  if (not self.music) or self.music:isStopped() then
-    if self.playlist then
+  if (not self.music) or self.music.stream:isStopped() then
+    if self.music and self.music.followed_by then
+      self:play_music(self.music.followed_by)
+    elseif self.playlist then
       local song = useful.randIn(self.playlist)
       self:play_music(song.name, song.volume, false)
     end
