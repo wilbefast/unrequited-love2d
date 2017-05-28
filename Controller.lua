@@ -62,9 +62,12 @@ function Controller:addButtonFromKeyList(name, keylist)
 end
 
 function Controller:addButton(name, fpressed)
+  local name_held = name .. "_held"
+  local name_released = name .. "_released"
   local button = {
     name = name,
-    name_held = name .. "_held",
+    name_held = name_held,
+    name_released = name_released,
     __fpressed = fpressed,
     __held_prev = false,
     pressed = false,
@@ -72,6 +75,8 @@ function Controller:addButton(name, fpressed)
   }
   self.buttons[name] = button
   self[name] = false
+  self[name_held] = false
+  self[name_released] = false
 end
 
 function Controller:update(dt)
@@ -100,6 +105,7 @@ function Controller:update(dt)
     -- shortcut access
     self[button.name] = (button.trigger == 1)
     self[button.name_held] = button.pressed
+    self[button.name_released] = (button.trigger == -1)
   end
 end
 
