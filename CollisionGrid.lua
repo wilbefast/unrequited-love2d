@@ -296,7 +296,7 @@ function CollisionGrid:saveToImage(filename, tileClass)
       img:setPixel(col, row, r, g, b, a)
     end
   end
-  img:encode(filename)
+  img:encode("png", filename)
 end
 
 
