@@ -112,6 +112,9 @@ Load from file
 --]]--
 
 function GameObject.loadFromObject(lua)
+  if not lua.objects then
+    error("Method 'loadFromObject' needs to be overriden")
+  end
 	for typename, instances in pairs(lua.objects) do
 		local ftypeObject = loadstring("return " .. typename)
 		if ftypeObject then
