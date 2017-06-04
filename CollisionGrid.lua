@@ -134,6 +134,24 @@ function CollisionGrid:mapDisc(centre_col, centre_row, r, f)
   end
 end
 
+function CollisionGrid:mapFlood(centre_col, centre_row, f, f_check)
+  local centre_tile = self:gridToTile(centre_col, centre_row)
+  if not centre_tile then
+    return
+  end
+  local _recurseFrom = nil
+  _recurseFrom = function(t)
+    if not t or not f_check(t) then
+      return
+    end
+    f(t)
+    for i, tt in ipairs(t.neighbours8) do
+      _recurseFrom(tt)
+    end
+  end
+  _recurseFrom(centre_tile)
+end
+
 function CollisionGrid:map(f)
   for col = 1, self.w do
     for row = 1, self.h do
