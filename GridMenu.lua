@@ -52,7 +52,9 @@ function GridMenu:addOption(option)
 end
 
 function GridMenu:forceNumberOfOptions(count)
-	self:forceDimensions(math.ceil(count / self.n_rows), math.floor(math.sqrt(count)))
+	local rows = math.max(1, math.floor(math.sqrt(count)))
+	local cols = math.ceil(count / rows)
+	self:forceDimensions(cols, rows)
 end
 
 function GridMenu:forceDimensions(cols, rows)
@@ -60,10 +62,9 @@ function GridMenu:forceDimensions(cols, rows)
 	self.n_rows = rows
 	self.n_options = cols*rows
 	for i, o in ipairs(self.options) do
-		o.row = math.floor((i -1) / self.n_cols) + 1
 		o.col = ((i - 1) % self.n_cols) + 1
+		o.row = math.floor((i -1) / self.n_cols) + 1
 		o.index = i
-
 		o.x = (o.col - self.n_cols/2)/self.n_cols
 		o.y = (o.row - self.n_rows/2)/self.n_rows
 	end
