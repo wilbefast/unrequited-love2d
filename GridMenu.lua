@@ -34,6 +34,9 @@ local GridMenu = Class
 		self.__open = 0
 		self.options = {}
 		self.x, self.y = 0, 0
+		self.n_cols = 0
+		self.n_rows = 0
+		self.n_options = 0
 	end
 }
 
@@ -44,7 +47,23 @@ Add options
 function GridMenu:addOption(option)
 	-- add the new option
 	table.insert(self.options, option)
-  option.x, option.y = 0, 0 --FIXME
+	option.menu = self
+	self:forceNumberOfOptions(#self.options)
+end
+
+function GridMenu:forceNumberOfOptions(count)
+	self:forceDimensions(math.ceil(count / self.n_rows), math.floor(math.sqrt(count)))
+end
+
+function GridMenu:forceDimensions(cols, rows)
+	self.n_cols = cols
+	self.n_rows = rows
+	self.n_options = cols*rows
+	for i, o in ipairs(self.options) do
+		o.row = math.floor((i -1) / self.n_cols) + 1
+		o.col = ((i - 1) % self.n_cols) + 1
+		o.index = i
+	end
 end
 
 --[[------------------------------------------------------------
@@ -114,6 +133,9 @@ function GridMenu:getSelection(minimum_value, x, y)
     -- TODO
   end
 
+	if true then
+		return nil
+	end
 
   if y > 0 then
     return self.options[#self.options]
@@ -139,14 +161,16 @@ function GridMenu:draw(x, y, context)
 	local selection = self:getSelection()
 	-- draw each options
 	for i, option in ipairs(self.options) do
-		if option ~= selection then
-			local offset_x, offset_y = option.x*self.__open, option.y*self.__open
-			-- draw the option
-			option:draw(x + offset_x, y + offset_y, false, self.__open, context, x, y)
+		if i <= self.n_options then
+			if option ~= selection then
+				local offset_x, offset_y = option.col*self.__open, option.row*self.__open
+				-- draw the option
+				option:draw(x + offset_x, y + offset_y, false, self.__open, context, x, y)
+			end
 		end
 	end
 	if selection then
-		local offset_x, offset_y = selection.x*self.__open, selection.y*self.__open
+		local offset_x, offset_y = selection.col*self.__open, selection.row*self.__open
 		-- draw the selection last so that it is always on top
 		selection:draw(x + offset_x, y + offset_y, true, self.__open, context, x, y)
 	end
