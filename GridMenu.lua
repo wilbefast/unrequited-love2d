@@ -63,6 +63,9 @@ function GridMenu:forceDimensions(cols, rows)
 		o.row = math.floor((i -1) / self.n_cols) + 1
 		o.col = ((i - 1) % self.n_cols) + 1
 		o.index = i
+
+		o.x = (o.col - self.n_cols/2)/self.n_cols
+		o.y = (o.row - self.n_rows/2)/self.n_rows
 	end
 end
 
@@ -128,19 +131,15 @@ function GridMenu:getSelection(minimum_value, x, y)
 		return self.__selection
 	end
 	-- get the best candidate
-	local best_option, best_value = nil, (minimum_value or 0.5)
+	local best_option, best_dist2 = nil, math.huge --(minimum_value or 0.5)
 	for i, option in ipairs(self.options) do
-    -- TODO
-  end
-
-	if true then
-		return nil
+		if i <= self.n_options then
+			local dist2 = Vector.dist2(x, y, option.x, option.y)
+	  	if dist2 < best_dist2 then
+	  		best_option, best_dist2 = option, dist2
+	  	end
+  	end
 	end
-
-  if y > 0 then
-    return self.options[#self.options]
-  end
-
 
   -- return an best
   self.__selection = best_option
