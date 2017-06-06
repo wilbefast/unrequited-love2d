@@ -47,6 +47,7 @@ Add options
 function RadialMenu:addOption(option, angle)
 	-- add the new option
 	table.insert(self.options, option)
+	option.menu = self
 	if not angle then
 		-- calculate angle between options
 		angle = math.pi*2/#self.options
