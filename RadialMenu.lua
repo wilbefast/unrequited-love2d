@@ -38,6 +38,7 @@ local RadialMenu = Class
 		self.x, self.y = 0, 0
 	end
 }
+RadialMenu.menuType = RadialMenu
 
 --[[------------------------------------------------------------
 Add options
@@ -158,7 +159,7 @@ function RadialMenu:draw(x, y, context)
 	if selection then
 		local offset_x, offset_y = selection.x*self.__open, selection.y*self.__open
 		-- draw the selection last so that it is always on top
-		selection:draw(x + offset_x, y + offset_y, true, self.__open, context, x, y)		
+		selection:draw(x + offset_x, y + offset_y, true, self.__open, context, x, y)
 	end
 end
 
