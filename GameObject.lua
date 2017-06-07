@@ -273,7 +273,10 @@ end
 function GameObject.mapToAll(f, suchThat)
   for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and ((not suchThat) or suchThat(object)) then
-      f(object, i)
+      local result = f(object, i)
+      if result then
+        return result
+      end
     end
   end
 end
@@ -283,7 +286,10 @@ function GameObject.mapToType(typename, f, suchThat)
   for i, object in ipairs(__UPDATE_LIST) do
     if not object.purge and (object.type == t) then
       if (not suchThat) or suchThat(object) then
-        f(object, i)
+        local result = f(object, i)
+        if result then
+          return result
+        end
       end
     end
   end
@@ -294,7 +300,10 @@ function GameObject.mapToPair(f)
     for j = i+1, (#__UPDATE_LIST)-1 do
       local object1, object2 = __UPDATE_LIST[i], __UPDATE_LIST[j]
       if( not object1.purge) and (not object2.purge) then
-        f(i, j)
+        local result = f(i, j)
+        if result then
+          return result
+        end
       end
     end
   end
@@ -308,7 +317,10 @@ function GameObject.mapToTypePair(typename1, typename2, f)
       for j = i+1, (#__UPDATE_LIST) do
         local object2 = __UPDATE_LIST[j]
         if not object2.purge and (object2.type == t2) then
-          f(object1, object2)
+          local result = f(object1, object2)
+          if result then
+            return result
+          end
         end
       end
     end
@@ -321,7 +333,10 @@ function GameObject.mapWithinRadius(x, y, radius, f, suchThat)
     if not object.purge and ((not suchThat) or suchThat(object)) then
       local distance2 = Vector.dist2(x, y, object.x, object.y)
       if distance2 <= radius2 then
-        f(object, distance2)
+        local result = f(object, distance2)
+        if result then
+          return result
+        end
       end
     end
   end
@@ -335,7 +350,10 @@ function GameObject.mapToTypeWithinRadius(typename, x, y, radius, f, suchThat)
       if (not suchThat) or suchThat(object) then
         local distance2 = Vector.dist2(x, y, object.x, object.y)
         if distance2 <= radius2 then
-          f(object, distance2)
+          local result = f(object, distance2)
+          if result then
+            return result
+          end
         end
       end
     end
@@ -347,7 +365,10 @@ function GameObject.mapCollidingRadius(x, y, radius, f, suchThat)
     if not object.purge and ((not suchThat) or suchThat(object)) then
       local distance = Vector.dist(x, y, object.x, object.y)
       if distance - object.r <= radius then
-        f(object, distance)
+        local result = f(object, distance)
+        if result then
+          return result
+        end
       end
     end
   end
