@@ -49,6 +49,13 @@ local _waitThen = function(duration, f)
  	end))
 end
 
+local _nextFrame = function(f)
+	babysitter.add(coroutine.create(function()
+ 		coroutine.yield()
+   	f()
+ 	end))
+end
+
 local _periodically = function(period, f)
 	babysitter.add(coroutine.create(function(dt)
 		local interrupt = false
@@ -70,5 +77,6 @@ return {
 	isBusy = _isBusy,
   activeWaitThen = _activeWaitThen,
 	waitThen = _waitThen,
+	nextFrame = _nextFrame,
 	periodically = _periodically
 }
