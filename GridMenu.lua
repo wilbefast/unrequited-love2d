@@ -56,10 +56,19 @@ function GridMenu:addOption(option)
 
 	local rows = math.max(1, math.floor(math.sqrt(count)))
 	local cols = math.ceil(count / rows)
+	self:setSize(cols, rows)
+end
+
+function GridMenu:setSize(cols, rows)
+	if not rows then
+		rows = cols
+		cols = math.ceil(#self.options / rows)
+	end
+
 	self.n_cols = cols
 	self.n_rows = rows
 	self.col, self.row = self.default_col, self.default_row
-	self.x, self.y = self.col/self.n_cols, self.row/self.n_rows
+	self.x, self.y = 0, 0
 	self.__selection = nil
 	for i, o in ipairs(self.options) do
 		o.col = ((i - 1) % cols) + 1
@@ -69,6 +78,7 @@ function GridMenu:addOption(option)
 		o.y = (o.row - rows/2)/rows
 	end
 end
+
 --[[------------------------------------------------------------
 Open and close
 --]]--
@@ -107,6 +117,7 @@ function GridMenu:move(dx, dy, dt)
 end
 
 function GridMenu:setPosition(x, y)
+
 	-- don't move if closed
 	if self:isClosed() then
 		return
