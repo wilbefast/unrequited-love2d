@@ -24,6 +24,15 @@ function useful.any(objects, f)
   return nil
 end
 
+function useful.all(objects, f)
+  for i, obj in ipairs(objects) do
+    if not f(obj, i) then
+      return false
+    end
+  end
+  return true
+end
+
 -- map a set of functions to a set of objects
 function useful.map(objects, ...)
   local args = useful.packArgs(...)
@@ -448,13 +457,20 @@ function useful.deck()
     useful.shuffle(cards)
   end
   function stack(card)
+    table.insert(cards, 1, card)
+  end
+  function bury(card)
     table.insert(cards, card)
-    shuffle()
+  end
+  function lose(card)
+    table.insert(cards, math.ceil(math.random() * #cards), card)
   end
 
   return {
     draw = draw,
     stack = stack,
+    bury = bury,
+    lose = lose,
     shuffle = shuffle
   }
 end
