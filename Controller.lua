@@ -79,6 +79,20 @@ function Controller:addButton(name, fpressed)
   self[name_released] = false
 end
 
+function Controller:addButtonFromAxisThreshold(name, axis_name, threshold)
+  if threshold > 0 then
+    self:addButton(name, function()
+      return (self[axis_name] > threshold)
+    end)
+  elseif threshold < 0 then
+    self:addButton(name, function()
+      return (self[axis_name] < threshold)
+    end)
+  else
+    error("Threshold cannot be equal to 0")
+  end
+end
+
 function Controller:update(dt)
   for _, axis in pairs(self.axes) do
     if axis.__fnegative then

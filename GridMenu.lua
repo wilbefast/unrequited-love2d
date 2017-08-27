@@ -116,6 +116,18 @@ function GridMenu:move(dx, dy, dt)
 	return self:setPosition(self.x + dx*dt, self.y + dy*dt)
 end
 
+function GridMenu:gridMove(dcol, drow)
+	-- don't move if closed
+	if self:isClosed() then
+		return
+	end
+	-- move
+
+	local x = (self.col - 1)/(self.n_cols - 1)
+	local y = (self.row - 1)/(self.n_rows - 1)
+	return self:setPosition(x + dcol/(self.n_cols - 1), y + drow/(self.n_rows - 1))
+end
+
 function GridMenu:setPosition(x, y)
 
 	-- don't move if closed
@@ -186,6 +198,24 @@ function GridMenu:draw(x, y, context)
 		-- draw the selection last so that it is always on top
 		selection:draw(x + offset_x, y + offset_y, true, self.__open, context, x, y)
 	end
+
+--[[
+	love.graphics.setColor(0, 0, 0)
+	for col = 1, self.n_cols do
+		for row = 1, self.n_rows do
+			if self.col == col and self.row == row then
+				love.graphics.rectangle("fill", col*32, row*32, 32, 32)
+			else
+				love.graphics.rectangle("line", col*32, row*32, 32, 32)
+			end
+		end
+	end
+
+	love.graphics.setColor(255, 255, 255)
+	love.graphics.circle("fill", 48 + (self.n_cols - 1)*32*self.x, 48 + (self.n_rows - 1)*32*self.y, 5)
+	love.graphics.print(tostring(self.x), 0, 0)
+	love.graphics.print(tostring(self.y), 0, 16)
+]]--
 end
 
 --[[------------------------------------------------------------
