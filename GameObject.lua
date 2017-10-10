@@ -380,6 +380,31 @@ Query
 --]]--
 
 --[[--
+get list
+--]]--
+
+function GameObject.getSuchThat(predicate)
+  local result = {}
+  for i, object in ipairs(__UPDATE_LIST) do
+    if  not object.purge and predicate(object) then
+      table.insert(result, object)
+    end
+  end
+  return result
+end
+
+function GameObject.getOfTypeSuchThat(typename, predicate)
+  local result = {}
+  local t = __TYPE[typename]
+  for i, object in ipairs(__UPDATE_LIST) do
+    if not object.purge and (object.type == t) and ((not predicate) or predicate(object)) then
+      table.insert(result, object)
+    end
+  end
+  return result
+end
+
+--[[--
 count
 --]]--
 
