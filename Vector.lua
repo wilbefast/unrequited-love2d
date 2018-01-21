@@ -82,8 +82,24 @@ local function dist(x1,y1, x2,y2)
 	return len(x1-x2, y1-y2)
 end
 
+local function obj_dist(a, b)
+	return len(a.x-b.x, a.y-b.y)
+end
+
 local function dist2(x1,y1, x2,y2)
 	return len2(x1-x2, y1-y2)
+end
+
+local function obj_dist2(a, b)
+	return len2(a.x-b.x, a.y-b.y)
+end
+
+local function obj_closer_than(a, b, dist)
+	return dist*dist > len2(a.x-b.x, a.y-b.y)
+end
+
+local function obj_further_than(a, b, dist)
+	return dist*dist < len2(a.x-b.x, a.y-b.y)
 end
 
 local function normalise(x,y)
@@ -137,10 +153,16 @@ return {
 	len2          = len2,
 	len           = len,
 	dist          = dist,
-	dist2					= dist2,
+	dist2         = dist2,
 	normalise     = normalise,
 	rotate        = rotate,
 	perpendicular = perpendicular,
 	project       = project,
 	mirror        = mirror,
+
+	-- operations on tables
+	obj_dist      		= obj_dist,
+	obj_dist2		 			= obj_dist2,
+	obj_closer_than 	= obj_closer_than,
+	obj_further_than 	= obj_further_than
 }
