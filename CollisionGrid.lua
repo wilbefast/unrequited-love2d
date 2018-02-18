@@ -142,16 +142,16 @@ function CollisionGrid:mapFlood(centre_col, centre_row, f, f_check)
     return
   end
   local _recurseFrom = nil
-  _recurseFrom = function(t)
-    if not t or not f_check(t) then
+  _recurseFrom = function(t, depth)
+    if not t or not f_check(t, depth) then
       return
     end
-    f(t)
+    f(t, depth)
     for i, tt in ipairs(t.neighbours8) do
-      _recurseFrom(tt)
+      _recurseFrom(tt, depth + 1)
     end
   end
-  _recurseFrom(centre_tile)
+  _recurseFrom(centre_tile, 1)
 end
 
 function CollisionGrid:map(f)
