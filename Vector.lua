@@ -94,8 +94,16 @@ local function obj_dist2(a, b)
 	return len2(a.x-b.x, a.y-b.y)
 end
 
+local function closer_than(x1, y1, x2, y2, dist)
+	return dist*dist > len2(x1-x2, y1-y2)
+end
+
 local function obj_closer_than(a, b, dist)
 	return dist*dist > len2(a.x-b.x, a.y-b.y)
+end
+
+local function further_than(x1, y1, x2, y2, dist)
+	return dist*dist < len2(x1-x2, y1-y2)
 end
 
 local function obj_further_than(a, b, dist)
@@ -159,6 +167,8 @@ return {
 	perpendicular = perpendicular,
 	project       = project,
 	mirror        = mirror,
+	closer_than   = closer_than,
+	further_than 	= further_than,
 
 	-- operations on tables
 	obj_dist      		= obj_dist,
