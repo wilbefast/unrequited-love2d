@@ -465,13 +465,17 @@ function useful.deck()
   function lose(card)
     table.insert(cards, math.ceil(math.random() * #cards), card)
   end
+  function count()
+    return #cards
+  end
 
   return {
     draw = draw,
     stack = stack,
     bury = bury,
     lose = lose,
-    shuffle = shuffle
+    shuffle = shuffle,
+    count = count
   }
 end
 
