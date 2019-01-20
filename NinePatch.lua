@@ -107,7 +107,7 @@ end
 function NinePatch:drawWithBackground(x, y, w, h, r, g, b)
   love.graphics.setColor(r, g, b)
   love.graphics.rectangle("fill", x, y, w, h)
-  love.graphics.setColor(255, 255, 255)
+  love.graphics.setColor(1, 1, 1)
   self:draw(x, y, w, h)
 end
 

@@ -78,10 +78,10 @@ function log:draw(x, y, w)
 	x, y, w = x or 16, y or 16, w or 256
 	local h = 16 + 32*#(self.messages)
 	-- draw background
-	love.graphics.setColor(0, 0, 0, 128)
+	love.graphics.setColor(0, 0, 0, 0.5)
 	love.graphics.rectangle("fill", x, y, w, h)
 	-- draw outline
-	love.graphics.setColor(255, 255, 255)
+	love.graphics.setColor(1, 1, 1)
 	love.graphics.setLineWidth(1)
 	love.graphics.rectangle("line", x, y, w, h)
 	-- draw text

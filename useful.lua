@@ -272,11 +272,11 @@ function useful.lineBoxCollision(x1, y1, x2, y2, bx, by, bw, bh)
 end
 
 function useful.bindWhite(a)
-  love.graphics.setColor(255, 255, 255, a or 255)
+  love.graphics.setColor(1, 1, 1, a or 1)
 end
 
 function useful.bindBlack(a)
-  love.graphics.setColor(0, 0, 0, a or 255)
+  love.graphics.setColor(0, 0, 0, a or 1)
 end
 
 function useful.recordGIF(key)

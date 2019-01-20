@@ -211,7 +211,7 @@ function GridMenu:draw(x, y, context)
 		end
 	end
 
-	love.graphics.setColor(255, 255, 255)
+	love.graphics.setColor(1, 1, 1)
 	love.graphics.circle("fill", 48 + (self.n_cols - 1)*32*self.x, 48 + (self.n_rows - 1)*32*self.y, 5)
 	love.graphics.print(tostring(self.x), 0, 0)
 	love.graphics.print(tostring(self.y), 0, 16)

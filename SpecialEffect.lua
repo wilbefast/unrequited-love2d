@@ -64,7 +64,7 @@ function SpecialEffect:draw(view)
     self.colourise()
   end
   self.view:draw(self)
-  love.graphics.setColor(255, 255, 255)
+  love.graphics.setColor(1, 1, 1)
 end
 
 
