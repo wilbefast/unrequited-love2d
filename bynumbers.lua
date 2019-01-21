@@ -21,11 +21,11 @@ local _split = function(str, sep)
 end
 
 local _colourToString = function(r, g, b, a)
-	return string.char(r, g, b, a)
+	return string.char(r*255, g*255, b*255, a*255)
 end
 
 local _stringToColour = function(str)
-	return string.byte(str, 1, 4)
+	return string.byte(str, 1, 4)/255
 end
 
 local _palettes = {}
@@ -36,7 +36,7 @@ local _addPalette = function(path)
 	local filename = parts[#parts]
 	local name = _split(filename, ".")[1]
 
-	local img = love.graphics.newImage(path):getData()
+	local img = love.image.newImageData(path)
 	local colours = {}
 	img:mapPixel(function(x, y, r, g, b, a)
 		local hash = _colourToString(r, g, b, a)
@@ -70,7 +70,7 @@ local _paint = function(args)
 							end
 							local w, h = image.tex:getDimensions()
 							local new_image_data = love.image.newImageData(w, h)
-							new_image_data:paste(image.tex:getData(), 0, 0, 0, 0, w, h)
+							new_image_data:paste(image.texdata, 0, 0, 0, 0, w, h)
 							new_image_data:mapPixel(function(x, y, r, g, b, a)
 								if a == 0 then
 									return r, g, b, a
@@ -122,7 +122,7 @@ local _normalise = function(args)
 
         local w, h = image.tex:getDimensions()
         local new_image_data = love.image.newImageData(w, h)
-        new_image_data:paste(image.tex:getData(), 0, 0, 0, 0, w, h)
+        new_image_data:paste(image.texdata, 0, 0, 0, 0, w, h)
         new_image_data:mapPixel(function(x, y, r, g, b, a)
           if a == 0 then
             return r, g, b, a
@@ -132,14 +132,15 @@ local _normalise = function(args)
             if not index then
               return fail_r or r, fail_g or g, fail_b or b, fail_a or a
             else
-              local n_index = (index / #palette)*255
+              local n_index = (index / #palette)
               return n_index, n_index, n_index, a
             end
           end
         end)
         table.insert(result, {
           name = new_image_name,
-          tex = love.graphics.newImage(new_image_data)
+					tex = love.graphics.newImage(new_image_data),
+					texdata = new_image_data
         })
       end
     end
