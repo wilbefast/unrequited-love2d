@@ -479,7 +479,7 @@ function useful.deck()
 end
 
 function useful.hsl(hue, saturation, lightness, alpha)
-  alpha = alpha or 255
+  alpha = alpha or 1
   if hue < 0 or hue > 360 then
       return 0, 0, 0, alpha
   end
@@ -507,7 +507,7 @@ function useful.hsl(hue, saturation, lightness, alpha)
       r,g,b=chroma,0,x
   end
   local m = lightness - chroma/2
-  return 255*(r+m), 255*(g+m), 255*(b+m), alpha
+  return (r+m), (g+m), (b+m), alpha
 end
 
 function useful.ktemp(temperature)
@@ -562,7 +562,7 @@ function useful.ktemp(temperature)
     end
   end
 
-  return r, g, b
+  return r/255, g/255, b/255
 end
 
 useful.format_time = function(time, h_sep, m_sep, s_sep)
