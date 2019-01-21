@@ -281,10 +281,9 @@ end
 
 function useful.recordGIF(key)
   if (not key) or love.keyboard.isDown(key) then
-    local s = love.graphics.newScreenshot()
     __kev__snum = (__kev__snum or 0) + 1
     love.filesystem.createDirectory("GIF")
-    s:encode("png", string.format("GIF/%04d",__kev__snum)..".png")
+    love.graphics.captureScreenshot(string.format("GIF/%04d",__kev__snum)..".png")
   end
 end
 
