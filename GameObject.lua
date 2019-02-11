@@ -442,6 +442,21 @@ function GameObject.countOfTypeSuchThat(typename, predicate)
   return count
 end
 
+function GameObject.countOfTypeWithinRange(typename, x, y, r, f)
+  local t = __TYPE[typename]
+  local r2 = r*r
+  local count = 0
+  for i, object in ipairs(__UPDATE_LIST) do
+    if not object.purge and (object.type == t) then
+      local obj_dist2 = Vector.dist2(x, y, object.x, object.y)
+      if obj_dist2 <= r2 and (not f or f(object)) then
+        count = count + 1
+      end
+    end
+  end
+  return count
+end
+
 --[[--
 check predicate
 --]]--
