@@ -110,7 +110,7 @@ function audio:play_music(id, volume, loop)
   if loop == nil then
     loop = not new_music.followed_by and new_music.loop
   end
-  if (self.music and self.music.stream:isStopped()) or (new_music ~= self.music) then
+  if (self.music and not self.music.stream:isPlaying()) or (new_music ~= self.music) then
     if self.music then
       self.music.stream:stop()
     end
@@ -127,7 +127,7 @@ function audio:is_playing_music(id)
   if not self.music then
     return false
   elseif not id then
-    return self.music and not self.music.stream:isStopped()
+    return self.music and self.music.stream:isPlaying()
   else
     local music = self[id]
     if not music then
@@ -157,7 +157,7 @@ function audio:play_sound(name, pitch_shift, x, y, fixed_pitch)
     return
   end
   for _, src in ipairs(sources) do
-    if src:isStopped() then
+    if not src:isPlaying() then
 
       -- shift the pitch
       if pitch_shift and (pitch_shift ~= 0) then
@@ -209,7 +209,7 @@ function audio:toggle_music()
   if not self.music then
     return
   elseif self.music.stream:isPaused() then
-    self.music.stream:resume()
+    self.music.stream:play()
   else
     self.music.stream:pause()
   end
@@ -233,7 +233,7 @@ ACTIVE WAIT
 --]]--
 
 function audio:update(dt)
-  if (not self.music) or self.music.stream:isStopped() then
+  if (not self.music) or (not self.music.stream:isPlaying()) then
     if self.music and self.music.followed_by then
       self:play_music(self.music.followed_by)
     elseif self.playlist then
