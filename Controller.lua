@@ -95,6 +95,7 @@ end
 
 function Controller:update(dt)
   self.time_since_input = (self.time_since_input or 0) + dt
+  self.time_since_change = (self.time_since_change or 0) + dt
 
   for _, axis in pairs(self.axes) do
     if axis.__fnegative then
@@ -116,13 +117,15 @@ function Controller:update(dt)
     if button.pressed then
       self.time_since_input = 0
     end
-
+    
     if button.pressed == button.__held_prev then
       button.trigger = 0
     elseif button.pressed then
       button.trigger = 1
+      self.time_since_change = 0
     else
       button.trigger = -1
+      self.time_since_change = 0
     end
 
     -- shortcut access
