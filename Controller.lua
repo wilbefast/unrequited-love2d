@@ -94,6 +94,8 @@ function Controller:addButtonFromAxisThreshold(name, axis_name, threshold)
 end
 
 function Controller:update(dt)
+  self.time_since_input = (self.time_since_input or 0) + dt
+
   for _, axis in pairs(self.axes) do
     if axis.__fnegative then
       axis.position = ((axis.__fpositive() and 1) or 0) - ((axis.__fnegative() and 1) or 0)
@@ -103,11 +105,18 @@ function Controller:update(dt)
 
     -- shortcut access
     self[axis.name] = axis.position
+    if math.abs(axis.position) > 0.1 then
+      self.time_since_input = 0
+    end
   end
 
   for _, button in pairs(self.buttons) do
     button.__held_prev = button.pressed
     button.pressed = button.__fpressed()
+    if button.pressed then
+      self.time_since_input = 0
+    end
+
     if button.pressed == button.__held_prev then
       button.trigger = 0
     elseif button.pressed then
