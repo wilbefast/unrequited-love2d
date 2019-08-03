@@ -702,8 +702,8 @@ function CollisionGrid:utilityGridPath(startcol, startrow, object, utilityFuncti
   local openStates = { startState }
   local allStates = { startTile = startState}
 
+  local bestPath = {}
   local best_utility = -math.huge
-  local best_state = nil
 
   while (#openStates > 0) do
     -- expand from the next open state
@@ -711,7 +711,12 @@ function CollisionGrid:utilityGridPath(startcol, startrow, object, utilityFuncti
     local utility = utilityFunction(state.currentTile) - state.currentCost
     if utility > best_utility then
       best_utility = utility
-      best_state = state
+      bestPath = {}
+      local best_state = state
+      while best_state do
+        table.insert(bestPath, 0, best_state.currentTile)
+        best_state = best_state.previousPathState
+      end
     end
 
     -- try to expand each neighbour
@@ -727,15 +732,8 @@ function CollisionGrid:utilityGridPath(startcol, startrow, object, utilityFuncti
   end
 
   -- all done
-  local path = { utility = best_utility }
-  if best_state then
-    local state = best_state
-    while state do
-      table.insert(path, 0, state.currentTile)
-      state = state.previousPathState
-    end
-  end
-  return path
+  bestPath.utility = best_utility
+  return bestPath
 end
 
 function CollisionGrid:utilityPixelPath(startx, starty, object, utilityFunction, costFunction)
