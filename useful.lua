@@ -194,7 +194,7 @@ function useful.signedRand(value)
 end
 
 function useful.iSignedRand(value)
-  value = (value or 1)
+  value = (value and math.floor(value + 0.5)) or 1
   local r = math.random()
   return (((r > 0.5) and value) or -value)
 end
