@@ -132,7 +132,8 @@ local _normalise = function(args)
             if not index then
               return fail_r or r, fail_g or g, fail_b or b, fail_a or a
             else
-              local n_index = (index / #palette)
+							--local n_index = (index / #palette)
+							local n_index = math.floor(index * 255 / #palette) / 255
               return n_index, n_index, n_index, a
             end
           end
