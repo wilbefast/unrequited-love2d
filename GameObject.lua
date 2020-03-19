@@ -928,7 +928,7 @@ function GameObject:update(dt)
     self.dy = fisix.MAX_DY*useful.sign(self.dy)
   end
   if fisix.MAX_SPEED then
-    local speed2 = Vector.len(self.dx, self.dy)
+    local speed2 = Vector.len2(self.dx, self.dy)
     if speed2 > fisix.MAX_SPEED*fisix.MAX_SPEED then
       local dx, dy = Vector.normalise(self.dx, self.dy)
       self.dx, self.dy = dx*fisix.MAX_SPEED, dy*fisix.MAX_SPEED
