@@ -141,20 +141,16 @@ Modification
 --]]--
 
 function GameObject.purgeAll()
-	useful.map(__UPDATE_LIST,
-		function(object)
-			object.purge = true
-      if object.onPurge then
-        object:onPurge()
-      end
-		end)
-  useful.map(__NEW_INSTANCES,
-    function(object)
-      object.purge = true
-      if object.onPurge then
-        object:onPurge()
-      end
-    end)
+  for i, obj in ipairs(__UPDATE_LIST) do
+    if obj.onPurge then
+      obj:onPurge()
+    end
+  end
+  for i, obj in ipairs(__NEW_INSTANCES) do
+    if obj.onPurge then
+      obj:onPurge()
+    end
+  end
   __UPDATE_LIST = {}
   __COLLISION_LIST = {}
   __DRAW_LIST = {}
@@ -164,12 +160,9 @@ end
 
 function GameObject.flushCreatedObjects(oblique)
   for _, new_object in pairs(__NEW_INSTANCES) do
-
     if not new_object.purge then
-
       -- add to update list
       table.insert(__UPDATE_LIST, new_object)
-
       -- add to draw list
       if new_object.draw then
         local inserted = false
@@ -194,18 +187,17 @@ function GameObject.flushCreatedObjects(oblique)
       -- add to collision list
       local _nullf = (function() end)
       if
-        (new_object.w and new_object.h)
-        or new_object.r
-        or new_object.eventCollision
+        not new_object.disableCollisions and 
+          ((new_object.w and new_object.h and new_object.w > 0 and new_object.h > 0)
+          or (new_object.r and new_object.r > 0)
+          or new_object.eventCollision)
       then
         table.insert(__COLLISION_LIST, new_object)
         if not new_object.eventCollision then
           new_object.eventCollision = _nullf
         end
       end
-
     end
-
   end
   __NEW_INSTANCES = { }
 end
@@ -218,29 +210,45 @@ function GameObject.updateAll(dt, view)
 
   -- update objects
   -- ...for each object
-  useful.map(__UPDATE_LIST,
-    function(object)
-      -- ...update the object
-      object:update(dt, level, view)
-  end)
+  local i = 1
+  while i <= #__UPDATE_LIST do
+    local obj = __UPDATE_LIST[i]
+    if obj.purge then
+      if obj.onPurge then
+        obj:onPurge()
+        obj.onPurge = nil
+      end
+      table.remove(__UPDATE_LIST, i)
+    else
+      obj:update(dt, level, view)
+      i = i + 1
+    end
+  end
 
   -- calculate collisions
-  useful.map(__COLLISION_LIST,
-  	function(object)
-	    -- ...check collisions with other objects
-	    useful.map(__COLLISION_LIST,
-        function(otherobject)
-          -- check collisions between objects
-          if object:isColliding(otherobject) then
-            object:eventCollision(otherobject, dt)
-          end
-      	end)
-	  end)
+  i = 1
+  while i <= #__COLLISION_LIST do
+    local obj_i = __COLLISION_LIST[i]
+    if obj_i.purge then
+      table.remove(__COLLISION_LIST, i)
+    else
+      local j = i + 1
+      while j <= #__COLLISION_LIST do
+        local obj_j = __COLLISION_LIST[j]
+        if not obj_j.purge and obj_i:isColliding(obj_j) then
+          obj_i:eventCollision(obj_j, dt)
+          obj_j:eventCollision(obj_i, dt)
+        end
+        j = j + 1
+      end
+      i = i + 1
+    end
+  end
 
   -- resort draw list
 	if oblique then
   	local oi = 1
-  	while oi <= (#__DRAW_LIST) do
+  	while oi <= #__DRAW_LIST do
     	local obj = __DRAW_LIST[oi]
       local obj_layer = (obj.layer or obj.y)
     	if oi > 1 then
@@ -259,15 +267,19 @@ end
 function GameObject.drawAll(view)
   -- oblique viewing angle ?
   local oblique = (view and view.oblique) or 1
-	-- for each object
-  useful.map(__DRAW_LIST,
-    function(object)
-      -- if the object is in view...
-      if not object.purge and ((not view) or (not (view.x and view.y and view.w and view.h)) or object:isColliding(view)) then
-        -- ...draw the object
-        object:draw(object.x, object.y*oblique, view)
+  -- for each object
+  local i = 1
+  while i <= #__DRAW_LIST do
+    local obj = __DRAW_LIST[i]
+    if obj.purge then
+      table.remove(__DRAW_LIST, i)
+    else
+      if not view or (not (view.x and view.y and view.w and view.h)) or obj:isColliding(view) then
+        obj:draw(obj.x, obj.y*oblique, view)
       end
-  end)
+      i = i + 1
+    end
+  end
 end
 
 function GameObject.mapToAll(f, suchThat)

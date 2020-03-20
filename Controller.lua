@@ -35,9 +35,16 @@ local Controller = Class
 }
 
 function Controller.updateAll(dt)
-  useful.map(__INSTANCES, function(controller)
-    controller:update(dt)
-  end)
+  local i = 1
+  while i <= #__INSTANCES do
+    local ctrl = __INSTANCES[i]
+    if ctrl.purge then
+      table.remove(__INSTANCES, i)
+    else
+      ctrl:update(dt)
+      i = i + 1
+    end
+  end
 end
 
 function Controller:addAxisFromKeyLists(name, keylist_positive, keylist_negative)
