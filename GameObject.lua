@@ -142,11 +142,13 @@ Modification
 
 function GameObject.purgeAll()
   for i, obj in ipairs(__UPDATE_LIST) do
+    obj.purge = true
     if obj.onPurge then
       obj:onPurge()
     end
   end
   for i, obj in ipairs(__NEW_INSTANCES) do
+    obj.purge = true
     if obj.onPurge then
       obj:onPurge()
     end
